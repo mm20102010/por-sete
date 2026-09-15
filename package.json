@@ -1,0 +1,16 @@
+{
+  "name": "por-sete",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "marketingVersion": "1.0.0",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "validate:repo": "node scripts/validate-release.mjs --repo",
+    "native:prepare": "node scripts/native-prepare.mjs",
+    "native:sync": "npm run native:prepare && node scripts/native-sync.mjs",
+    "native:validate": "node scripts/native-validate.mjs",
+    "native:open": "open ios/App/App.xcodeproj",
+    "repo:gate": "npm test && npm run validate:repo && npm run native:sync && npm run native:validate"
+  }
+}

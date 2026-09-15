@@ -1,0 +1,49 @@
+{
+  "sourceLanguage": "pt",
+  "strings": {
+    "complication.name": {
+      "localizations": {
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por Sete · Ícone"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por Sete · Icon"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por Sete · Icono"
+          }
+        }
+      }
+    },
+    "complication.description": {
+      "localizations": {
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ícone do Por Sete. Toque para abrir o app."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por Sete icon. Tap to open the app."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Icono de Por Sete. Toca para abrir la app."
+          }
+        }
+      }
+    }
+  }
+}

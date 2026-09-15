@@ -1,0 +1,8 @@
+{
+  "appId": "br.com.mmregistro.porsete",
+  "appName": "Por Sete",
+  "webDir": "native-web",
+  "ios": {
+    "contentInset": "never"
+  }
+}

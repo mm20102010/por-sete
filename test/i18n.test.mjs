@@ -1,0 +1,1 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {SUPPORTED_LANGUAGES,translate} from '../public/i18n.js';test('PT EN ES disponíveis',()=>{assert.deepEqual(Object.keys(SUPPORTED_LANGUAGES),['pt-BR','en','es']);for(const l of Object.keys(SUPPORTED_LANGUAGES)){assert.ok(translate(l,'startGame'));assert.ok(translate(l,'answerTruncate'));}});

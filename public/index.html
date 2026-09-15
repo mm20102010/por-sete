@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="color-scheme" content="dark">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Por Sete">
+  <meta name="format-detection" content="telephone=no">
+  <title>Por Sete</title>
+  <link rel="manifest" href="/manifest.webmanifest?v=18">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="icon" href="/icons/icon-192.png" sizes="192x192">
+  <link rel="stylesheet" href="/styles.css?v=18">
+</head>
+<body>
+  <main id="app" class="app-shell" aria-live="polite" data-startup-pending="1">
+    <section class="screen"><h1>Por Sete</h1><p class="subtitle" id="bootMessage">Carregando…</p></section>
+  </main>
+
+  <div id="mistakeModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="mistakeTitle" hidden>
+    <div class="modal-card">
+      <h2 id="mistakeTitle">Incorreto!</h2>
+      <p id="mistakeNumber" class="modal-question"></p>
+      <div id="mistakeCorrect" class="answer answer-correct"></div>
+      <div id="mistakeWrong" class="answer answer-wrong"></div>
+      <button id="continueButton" class="button button-primary" type="button">Continuar</button>
+    </div>
+  </div>
+
+  <div id="resumeModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="resumeTitle" hidden>
+    <div class="modal-card">
+      <h2 id="resumeTitle">Jogo pausado</h2>
+      <p id="resumeText">O cronômetro ficou congelado enquanto o app estava em segundo plano.</p>
+      <button id="resumeButton" class="button button-primary" type="button">Continuar jogo</button>
+    </div>
+  </div>
+
+  <div id="installModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="installTitle" hidden>
+    <div class="modal-card install-modal-card">
+      <div class="share-symbol" aria-hidden="true">
+        <svg viewBox="0 0 24 24" role="img" focusable="false">
+          <path d="M12 3v11M8 7l4-4 4 4M5 11v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/>
+        </svg>
+      </div>
+      <h2 id="installTitle">Adicionar à Tela de Início</h2>
+      <ol class="install-steps" id="installSteps">
+        <li>No Safari, toque em <strong>Compartilhar</strong>.</li>
+        <li>Escolha <strong>Adicionar à Tela de Início</strong>.</li>
+        <li>Se aparecer a opção <strong>Abrir como Web App</strong>, mantenha-a ativada e toque em <strong>Adicionar</strong>.</li>
+      </ol>
+      <button id="installDoneButton" class="button button-primary" type="button">Já adicionei</button>
+      <button id="installCloseButton" class="button button-ghost" type="button">Agora não</button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var language = 'pt-BR';
+      try {
+        var saved = localStorage.getItem('porSeteLanguageV1');
+        if (saved === 'en' || saved === 'es' || saved === 'pt-BR') language = saved;
+      } catch (_) {}
+      var langCodes = { 'pt-BR': 'pt-BR', en: 'en', es: 'es' };
+      var loading = { 'pt-BR': 'Carregando…', en: 'Loading…', es: 'Cargando…' };
+      var error = { 'pt-BR': 'Não foi possível iniciar o app.', en: 'The app could not be started.', es: 'No se pudo iniciar la app.' };
+      var reload = { 'pt-BR': 'Recarregar', en: 'Reload', es: 'Recargar' };
+      document.documentElement.lang = langCodes[language];
+      var boot = document.getElementById('bootMessage');
+      if (boot) boot.textContent = loading[language];
+      window.__porSeteBootLocale = { language: language, error: error, reload: reload };
+    })();
+
+    window.setTimeout(function () {
+      var app = document.getElementById('app');
+      if (app && app.dataset.startupPending === '1') {
+        var locale = window.__porSeteBootLocale || { language: 'pt-BR', error: { 'pt-BR': 'Não foi possível iniciar o app.' }, reload: { 'pt-BR': 'Recarregar' } };
+        var lang = locale.language;
+        app.innerHTML = '<section class="screen"><h1>Por Sete</h1><p class="subtitle">' + locale.error[lang] + '</p><button class="button button-primary" type="button" onclick="location.reload()">' + locale.reload[lang] + '</button></section>';
+      }
+    }, 4000);
+  </script>
+  <script type="module" src="/app.js?v=18"></script>
+</body>
+</html>

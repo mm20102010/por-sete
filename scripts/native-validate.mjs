@@ -1,0 +1,1 @@
+import {spawnSync} from 'node:child_process';const r=spawnSync(process.execPath,['scripts/validate-release.mjs','--repo'],{stdio:'inherit'});if(r.status)process.exit(r.status);console.log('native validation: OK');

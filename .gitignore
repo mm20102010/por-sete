@@ -1,0 +1,6 @@
+node_modules/
+native-web/
+ios/App/App/public/
+.DS_Store
+*.xcuserstate
+xcuserdata/

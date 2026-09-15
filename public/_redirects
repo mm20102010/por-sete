@@ -1,0 +1,3 @@
+# Compatibilidade com instalações antigas que ainda iniciam em /index.html.
+# Cloudflare Pages faz um rewrite interno (200), sem expor redirect ao Service Worker.
+/index.html / 200
