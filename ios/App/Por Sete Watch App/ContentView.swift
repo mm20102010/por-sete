@@ -231,18 +231,25 @@ struct ContentView: View {
             let height = geometry.size.height
             let unit = (width - columnGap * 3) / 4
 
-            // Keep the entire game on one glanceable watch screen. The header and
-            // answer field have fixed compact heights; the keyboard consumes the
-            // remaining space and adapts between smaller and larger Watch displays.
-            let headerHeight: CGFloat = height < 205 ? 41 : 44
-            let answerHeight: CGFloat = height < 205 ? 22 : 24
+            // Keep the entire game on one glanceable watch screen. The header
+            // starts at the very top of the system safe area (never underneath
+            // the watchOS clock) and aligns phase / number / score on the same
+            // top baseline. This recovers the visual gap without violating the
+            // status-bar safe area and lets the main number be more prominent.
+            let compactWatch = height < 205
+            let headerHeight: CGFloat = compactWatch ? 48 : 52
+            let sideWidth: CGFloat = compactWatch ? 43 : 47
+            let numberFont: CGFloat = compactWatch ? 34 : (height < 235 ? 38 : 41)
+            let divisionFont: CGFloat = compactWatch ? 13 : 15
+            let sideFont: CGFloat = compactWatch ? 9.5 : 10
+            let answerHeight: CGFloat = compactWatch ? 22 : 24
             let reserved = headerHeight + answerHeight + rowGap * 2 + columnGap * 3
             let rawKeyHeight = (height - reserved) / 4
             let keyHeight = max(24, min(34, rawKeyHeight))
             let keyFont = max(16, min(19, keyHeight * 0.58))
 
             VStack(spacing: rowGap) {
-                HStack(alignment: .center, spacing: 3) {
+                HStack(alignment: .top, spacing: 2) {
                     VStack(alignment: .leading, spacing: 1) {
                         Text("\(settings.text("phase")) \(game.phase)")
                             .lineLimit(1)
@@ -255,36 +262,32 @@ struct ContentView: View {
                                 .accessibilityHidden(true)
                         }
                     }
-                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .font(.system(size: sideFont, weight: .semibold, design: .rounded))
                     .foregroundStyle(PorSetePalette.secondaryText)
-                    .frame(width: 50, alignment: .leading)
+                    .frame(width: sideWidth, height: headerHeight, alignment: .topLeading)
 
-                    Spacer(minLength: 0)
-
-                    VStack(spacing: -3) {
+                    VStack(spacing: -5) {
                         Text("\(game.number)")
-                            .font(.system(size: height < 205 ? 27 : 30, weight: .black, design: .rounded))
+                            .font(.system(size: numberFont, weight: .black, design: .rounded))
                             .foregroundStyle(.white)
                             .lineLimit(1)
-                            .minimumScaleFactor(0.72)
+                            .minimumScaleFactor(0.70)
                         Text("÷ 7")
-                            .font(.system(size: height < 205 ? 13 : 14, weight: .bold, design: .rounded))
+                            .font(.system(size: divisionFont, weight: .bold, design: .rounded))
                             .foregroundStyle(PorSetePalette.secondaryText)
                     }
-                    .frame(maxWidth: .infinity, alignment: .center)
-
-                    Spacer(minLength: 0)
+                    .frame(maxWidth: .infinity, maxHeight: headerHeight, alignment: .top)
 
                     VStack(alignment: .trailing, spacing: 1) {
                         Text("✓\(game.correctInPhase)/10")
                         Text("✕\(game.errors)/3")
                     }
-                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .font(.system(size: sideFont, weight: .semibold, design: .rounded))
                     .foregroundStyle(PorSetePalette.secondaryText)
                     .monospacedDigit()
-                    .frame(width: 50, alignment: .trailing)
+                    .frame(width: sideWidth, height: headerHeight, alignment: .topTrailing)
                 }
-                .frame(height: headerHeight)
+                .frame(height: headerHeight, alignment: .top)
 
                 let displayed = game.displayedInput(language: settings.language)
                 Text(displayed.isEmpty ? "—" : displayed)
