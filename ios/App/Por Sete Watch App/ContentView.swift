@@ -235,12 +235,12 @@ struct ContentView: View {
             // answer strip, distribute the lower rows more elegantly, and use
             // more of the available vertical space so buttons feel easier to hit.
             let compactWatch = height < 205
-            let headerHeight: CGFloat = compactWatch ? 34 : 38
+            let headerHeight: CGFloat = compactWatch ? 32 : 36
             let sideWidth: CGFloat = compactWatch ? 34 : 38
-            let numberFont: CGFloat = compactWatch ? 41 : (height < 235 ? 45 : 48)
+            let numberFont: CGFloat = compactWatch ? 42 : (height < 235 ? 46 : 49)
             let divisionFont: CGFloat = compactWatch ? 11 : 13
             let sideFont: CGFloat = compactWatch ? 8.5 : 9.5
-            let answerHeight: CGFloat = compactWatch ? 10 : 12
+            let answerHeight: CGFloat = compactWatch ? 18 : 20
             let totalGaps = rowGap * 6
             let reserved = headerHeight + answerHeight + totalGaps
             let availableKeys = height - reserved
@@ -267,7 +267,7 @@ struct ContentView: View {
                     .font(.system(size: sideFont, weight: .semibold, design: .rounded))
                     .foregroundStyle(PorSetePalette.secondaryText)
                     .frame(width: sideWidth, height: headerHeight, alignment: .topLeading)
-                    .offset(y: -3)
+                    .offset(y: -5)
 
                     VStack(spacing: -7) {
                         Text("\(game.number)")
@@ -280,7 +280,7 @@ struct ContentView: View {
                             .foregroundStyle(PorSetePalette.secondaryText)
                     }
                     .frame(maxWidth: .infinity, maxHeight: headerHeight, alignment: .top)
-                    .offset(y: -3)
+                    .offset(y: -5)
 
                     VStack(alignment: .trailing, spacing: 1) {
                         Text("✓\(game.correctInPhase)/10")
@@ -290,17 +290,19 @@ struct ContentView: View {
                     .foregroundStyle(PorSetePalette.secondaryText)
                     .monospacedDigit()
                     .frame(width: sideWidth, height: headerHeight, alignment: .topTrailing)
-                    .offset(y: -3)
+                    .offset(y: -5)
                 }
                 .frame(height: headerHeight, alignment: .top)
 
                 let displayed = game.displayedInput(language: settings.language)
                 Text(displayed.isEmpty ? " " : displayed)
-                    .font(.system(size: height < 205 ? 15 : 17, weight: .bold, design: .rounded))
+                    .font(.system(size: height < 205 ? 19 : 21, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .lineLimit(1)
                     .minimumScaleFactor(0.55)
                     .frame(maxWidth: .infinity, minHeight: answerHeight, maxHeight: answerHeight)
+                    .background(.black.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
 
                 ForEach([["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"]], id: \.self) { row in
                     HStack(spacing: columnGap) {
@@ -357,7 +359,7 @@ struct ContentView: View {
                 .frame(height: enterKeyHeight)
             }
             .padding(.horizontal, 2)
-            .offset(y: -6)
+            .offset(y: -8)
             .frame(maxHeight: .infinity, alignment: .top)
         }
         .alert(item: $game.mistake) { mistake in
