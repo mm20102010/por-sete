@@ -442,6 +442,14 @@ struct ContentView: View {
             .offset(y: stackLift)
             .frame(maxHeight: .infinity, alignment: .top)
         }
+        // Series 11 42mm leaves a substantial bottom safe-area that was not
+        // available to GeometryReader. Reclaim only that bottom edge on small
+        // Watches; the top safe-area (system clock) remains protected and the
+        // regular/Ultra layouts remain unchanged.
+        .ignoresSafeArea(
+            .container,
+            edges: WKInterfaceDevice.current().screenBounds.width < 195 ? .bottom : []
+        )
         .alert(item: $game.mistake) { mistake in
             Alert(
                 title: Text(mistake.timeout ? settings.text("timeout") : settings.text("incorrect")),

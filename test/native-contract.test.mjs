@@ -78,6 +78,10 @@ test('Series 11 42mm usa layout inferior ancorado sem alterar o Ultra', () => {
   assert.match(c, /let keyboardTopGap: CGFloat = smallWatch \? 4 : rowGap/);
   assert.match(c, /let headerLift: CGFloat = smallWatch \? -13 : -9/);
   assert.match(c, /let stackLift: CGFloat = smallWatch \? 0 : -6/);
+  assert.match(
+    c,
+    /edges: WKInterfaceDevice\.current\(\)\.screenBounds\.width < 195 \? \.bottom : \[\]/,
+  );
 });
 
 test('Ultra preserva a geometria grande aprovada', () => {
@@ -100,4 +104,12 @@ test('Watch não usa atribuições imperativas dentro do ViewBuilder', () => {
   assert.doesNotMatch(c, /let mainKeyHeight: CGFloat[\s\S]*?if smallWatch \{/);
   assert.match(c, /let mainKeyHeight = smallWatch \? smallMainKeyHeight : regularMainKeyHeight/);
   assert.match(c, /let enterKeyHeight = smallWatch \? smallEnterKeyHeight : regularEnterKeyHeight/);
+});
+
+test('Watch pequeno ignora somente a safe area inferior do jogo', () => {
+  const c = read('ios/App/Por Sete Watch App/ContentView.swift');
+  assert.match(c, /\.ignoresSafeArea\(\s*\.container,/);
+  assert.match(c, /\? \.bottom : \[\]/);
+  assert.doesNotMatch(c, /edges:.*\.top/);
+  assert.doesNotMatch(c, /edges:.*\.all/);
 });
