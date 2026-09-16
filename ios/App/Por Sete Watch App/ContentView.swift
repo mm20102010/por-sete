@@ -284,8 +284,8 @@ struct ContentView: View {
             let numberFont: CGFloat = smallWatch ? 42 : (compactWatch ? 42 : (height < 235 ? 46 : 49))
             let divisionFont: CGFloat = smallWatch ? 11 : (compactWatch ? 11 : 13)
             let sideFont: CGFloat = smallWatch ? 8.5 : (compactWatch ? 8.5 : 9.5)
-            let answerHeight: CGFloat = smallWatch ? 19 : (compactWatch ? 20 : 22)
-            let answerFont: CGFloat = smallWatch ? 20 : (compactWatch ? 21 : 23)
+            let answerHeight: CGFloat = smallWatch ? 19 : (compactWatch ? 20 : (ultraWatch ? 26 : 22))
+            let answerFont: CGFloat = smallWatch ? 20 : (compactWatch ? 21 : (ultraWatch ? 28 : 23))
 
             // Small Watches are split into a compact top zone and a keyboard
             // zone anchored to the bottom. This removes the dead space that was

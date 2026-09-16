@@ -83,19 +83,19 @@ test('Series 11 42mm usa layout inferior ancorado sem alterar o Ultra', () => {
   assert.match(c, /\? \.bottom : \[\]/);
 });
 
-test('Ultra preserva a geometria grande aprovada', () => {
+test('Ultra preserva teclas grandes mesmo com resposta mais legível', () => {
   const width = 205;
   const height = 251;
   const rowGap = 2;
   const headerHeight = 34;
-  const answerHeight = 22;
+  const answerHeight = 26;
   const totalGaps = rowGap * 6;
   const availableKeys = height - headerHeight - answerHeight - totalGaps;
   const rawMainKeyHeight = (availableKeys - 28) / 4;
   const mainKeyHeight = Math.max(27, Math.min(35, rawMainKeyHeight));
   const enterKeyHeight = Math.max(24, Math.min(40, availableKeys - mainKeyHeight * 4));
   assert.equal(mainKeyHeight, 35);
-  assert.equal(enterKeyHeight, 40);
+  assert.equal(enterKeyHeight, 39);
 });
 
 test('Watch não usa atribuições imperativas dentro do ViewBuilder', () => {
@@ -119,12 +119,14 @@ test('Ultra usa o mesmo ancoramento inferior do Series 11 sem reduzir suas tecla
   assert.match(c, /let anchoredWatch = smallWatch \|\| ultraWatch/);
   assert.match(c, /if anchoredWatch \{\s*Spacer\(minLength: keyboardTopGap\)/);
   assert.match(c, /min\(ultraWatch \? 40 : 36,/);
+  assert.match(c, /let answerHeight: CGFloat = smallWatch \? 19 : \(compactWatch \? 20 : \(ultraWatch \? 26 : 22\)\)/);
+  assert.match(c, /let answerFont: CGFloat = smallWatch \? 20 : \(compactWatch \? 21 : \(ultraWatch \? 28 : 23\)\)/);
 
   const width = 205;
   const height = 251;
   const rowGap = 2;
   const headerHeight = 34;
-  const answerHeight = 22;
+  const answerHeight = 26;
   const totalGaps = rowGap * 6;
   const regularAvailableKeys = height - headerHeight - answerHeight - totalGaps;
   const regularRawMainKeyHeight = (regularAvailableKeys - 28) / 4;
@@ -135,5 +137,5 @@ test('Ultra usa o mesmo ancoramento inferior do Series 11 sem reduzir suas tecla
   );
 
   assert.equal(mainKeyHeight, 35);
-  assert.equal(enterKeyHeight, 40);
+  assert.equal(enterKeyHeight, 39);
 });
