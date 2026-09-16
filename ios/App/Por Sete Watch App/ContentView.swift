@@ -230,32 +230,47 @@ struct ContentView: View {
             let width = geometry.size.width
             let height = geometry.size.height
             let unit = (width - columnGap * 2) / 3
+            let deviceWidth = WKInterfaceDevice.current().screenBounds.width
 
-            // Tune the Watch layout by size class: keep the current roomy Ultra
-            // presentation, but apply a denser geometry on smaller cases such
-            // as Series 11 42mm so the whole game stays visible.
+            // Size detection uses the physical Watch screen width, while the
+            // vertical budget uses the actual GeometryReader height. This avoids
+            // relying on a breakpoint that can vary with watchOS safe-area math.
+            // On small Watches every row is derived from the available budget,
+            // so hard minimums can never force the Enter key below the screen.
+            let smallWatch = deviceWidth < 195
+            let ultraWatch = deviceWidth >= 205
             let compactWatch = height < 205
-            let smallWatch = !compactWatch && (width < 190 || height < 230)
-            let ultraWatch = width >= 205 && height >= 245
 
-            let headerHeight: CGFloat = compactWatch ? 30 : (smallWatch ? 30 : 34)
-            let sideWidth: CGFloat = compactWatch ? 34 : (smallWatch ? 34 : 38)
-            let numberFont: CGFloat = compactWatch ? 42 : (smallWatch ? 43 : (height < 235 ? 46 : 49))
-            let divisionFont: CGFloat = compactWatch ? 11 : (smallWatch ? 12 : 13)
-            let sideFont: CGFloat = compactWatch ? 8.5 : (smallWatch ? 8.7 : 9.5)
-            let answerHeight: CGFloat = compactWatch ? 20 : (smallWatch ? 19 : 22)
-            let answerFont: CGFloat = compactWatch ? 21 : (smallWatch ? 20 : 23)
-            let bottomSafety: CGFloat = smallWatch ? 6 : 0
+            let headerHeight: CGFloat = smallWatch ? 28 : (compactWatch ? 30 : 34)
+            let sideWidth: CGFloat = smallWatch ? 34 : (compactWatch ? 34 : 38)
+            let numberFont: CGFloat = smallWatch ? 42 : (compactWatch ? 42 : (height < 235 ? 46 : 49))
+            let divisionFont: CGFloat = smallWatch ? 11 : (compactWatch ? 11 : 13)
+            let sideFont: CGFloat = smallWatch ? 8.5 : (compactWatch ? 8.5 : 9.5)
+            let answerHeight: CGFloat = smallWatch ? 20 : (compactWatch ? 20 : 22)
+            let answerFont: CGFloat = smallWatch ? 21 : (compactWatch ? 21 : 23)
             let totalGaps = rowGap * 6
-            let reserved = headerHeight + answerHeight + totalGaps + bottomSafety
-            let availableKeys = height - reserved
-            let rawMainKeyHeight = (availableKeys - (smallWatch ? 24 : 28)) / 4
-            let mainKeyHeight = max(compactWatch ? 27 : (smallWatch ? 25 : 27), min(smallWatch ? 32 : 35, rawMainKeyHeight))
-            let enterKeyHeight = max(24, min(ultraWatch ? 40 : (smallWatch ? 30 : 40), availableKeys - mainKeyHeight * 4))
-            let keyFont = max(17, min(20, mainKeyHeight * 0.56))
-            let enterKeyFont = max(16, min(19, enterKeyHeight * 0.56))
+            let bottomSafety: CGFloat = smallWatch ? 4 : 0
+            let availableKeys = max(0, height - headerHeight - answerHeight - totalGaps - bottomSafety)
+
+            let mainKeyHeight: CGFloat
+            let enterKeyHeight: CGFloat
+            if smallWatch {
+                // Reserve about 17% of the keypad budget for Enter and divide
+                // the remainder exactly among the four full-width keypad rows.
+                // No lower clamp is applied to the four rows: total height can
+                // therefore never exceed the actual Watch content height.
+                enterKeyHeight = min(28, max(20, availableKeys * 0.17))
+                mainKeyHeight = max(1, (availableKeys - enterKeyHeight) / 4)
+            } else {
+                let rawMainKeyHeight = (availableKeys - 28) / 4
+                mainKeyHeight = max(27, min(35, rawMainKeyHeight))
+                enterKeyHeight = max(24, min(ultraWatch ? 40 : 36, availableKeys - mainKeyHeight * 4))
+            }
+
+            let keyFont = max(16, min(20, mainKeyHeight * 0.56))
+            let enterKeyFont = max(15, min(19, enterKeyHeight * 0.56))
             let headerLift: CGFloat = smallWatch ? -11 : -9
-            let stackLift: CGFloat = smallWatch ? -10 : -6
+            let stackLift: CGFloat = smallWatch ? -8 : -6
 
             VStack(spacing: rowGap) {
                 HStack(alignment: .top, spacing: 2) {
