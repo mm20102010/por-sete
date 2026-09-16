@@ -24,7 +24,7 @@ test('Watch mantém jogo glanceable e engrenagem central', () => {
   assert.match(c, /let deviceWidth = WKInterfaceDevice\.current\(\)\.screenBounds\.width/);
   assert.match(c, /let smallWatch = deviceWidth < 195/);
   assert.match(c, /let ultraWatch = deviceWidth >= 205/);
-  assert.match(c, /mainKeyHeight = max\(1, \(availableKeys - enterKeyHeight\) \/ 4\)/);
+  assert.match(c, /let smallMainKeyHeight = max\(1, \(availableKeys - smallEnterKeyHeight\) \/ 4\)/);
   assert.match(c, /let stackLift: CGFloat = smallWatch \? -8 : -6/);
   assert.match(c, /\.frame\(width: unit \* 2\.05\)/);
   assert.match(c, /KeyButton\(height: enterKeyHeight, fontSize: enterKeyFont, accent: true\)/);
@@ -68,4 +68,11 @@ test('Ultra preserva a geometria grande aprovada', () => {
   const enterKeyHeight = Math.max(24, Math.min(40, availableKeys - mainKeyHeight * 4));
   assert.equal(mainKeyHeight, 35);
   assert.equal(enterKeyHeight, 40);
+});
+
+test('Watch não usa atribuições imperativas dentro do ViewBuilder', () => {
+  const c = read('ios/App/Por Sete Watch App/ContentView.swift');
+  assert.doesNotMatch(c, /let mainKeyHeight: CGFloat[\s\S]*?if smallWatch \{/);
+  assert.match(c, /let mainKeyHeight = smallWatch \? smallMainKeyHeight : regularMainKeyHeight/);
+  assert.match(c, /let enterKeyHeight = smallWatch \? smallEnterKeyHeight : regularEnterKeyHeight/);
 });

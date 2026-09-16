@@ -252,20 +252,19 @@ struct ContentView: View {
             let bottomSafety: CGFloat = smallWatch ? 4 : 0
             let availableKeys = max(0, height - headerHeight - answerHeight - totalGaps - bottomSafety)
 
-            let mainKeyHeight: CGFloat
-            let enterKeyHeight: CGFloat
-            if smallWatch {
-                // Reserve about 17% of the keypad budget for Enter and divide
-                // the remainder exactly among the four full-width keypad rows.
-                // No lower clamp is applied to the four rows: total height can
-                // therefore never exceed the actual Watch content height.
-                enterKeyHeight = min(28, max(20, availableKeys * 0.17))
-                mainKeyHeight = max(1, (availableKeys - enterKeyHeight) / 4)
-            } else {
-                let rawMainKeyHeight = (availableKeys - 28) / 4
-                mainKeyHeight = max(27, min(35, rawMainKeyHeight))
-                enterKeyHeight = max(24, min(ultraWatch ? 40 : 36, availableKeys - mainKeyHeight * 4))
-            }
+            // Keep all layout calculations as expressions. GeometryReader's
+            // content closure is a ViewBuilder; imperative assignment branches
+            // would be interpreted as Views and produce Type '()' errors.
+            let smallEnterKeyHeight = min(28, max(20, availableKeys * 0.17))
+            let smallMainKeyHeight = max(1, (availableKeys - smallEnterKeyHeight) / 4)
+            let regularRawMainKeyHeight = (availableKeys - 28) / 4
+            let regularMainKeyHeight = max(27, min(35, regularRawMainKeyHeight))
+            let regularEnterKeyHeight = max(
+                24,
+                min(ultraWatch ? 40 : 36, availableKeys - regularMainKeyHeight * 4)
+            )
+            let mainKeyHeight = smallWatch ? smallMainKeyHeight : regularMainKeyHeight
+            let enterKeyHeight = smallWatch ? smallEnterKeyHeight : regularEnterKeyHeight
 
             let keyFont = max(16, min(20, mainKeyHeight * 0.56))
             let enterKeyFont = max(15, min(19, enterKeyHeight * 0.56))
