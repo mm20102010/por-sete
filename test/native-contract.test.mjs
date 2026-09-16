@@ -22,11 +22,15 @@ test('Watch tem home, engrenagem, teclado e complication', () => {
 test('Watch mantém jogo glanceable e engrenagem central', () => {
   const c = read('ios/App/Por Sete Watch App/ContentView.swift');
   assert.match(c, /\.frame\(maxWidth: \.infinity, alignment: \.center\)/);
-  assert.match(c, /let rawMainKeyHeight = \(availableKeys - 28\) \/ 4/);
+  assert.match(c, /let smallWatch = !compactWatch && \(width < 190 \|\| height < 230\)/);
+  assert.match(c, /let ultraWatch = width >= 205 && height >= 245/);
+  assert.match(c, /let rawMainKeyHeight = \(availableKeys - \(smallWatch \? 24 : 28\)\) \/ 4/);
   assert.match(c, /HStack\(alignment: \.top, spacing: 2\)/);
-  assert.match(c, /let numberFont: CGFloat = compactWatch \? 42 : \(height < 235 \? 46 : 49\)/);
-  assert.match(c, /let answerHeight: CGFloat = compactWatch \? 20 : 22/);
-  assert.match(c, /let enterKeyHeight = max\(24, min\(40, availableKeys - mainKeyHeight \* 4\)\)/);
+  assert.match(c, /let numberFont: CGFloat = compactWatch \? 42 : \(smallWatch \? 43 : \(height < 235 \? 46 : 49\)\)/);
+  assert.match(c, /let answerHeight: CGFloat = compactWatch \? 20 : \(smallWatch \? 19 : 22\)/);
+  assert.match(c, /let answerFont: CGFloat = compactWatch \? 21 : \(smallWatch \? 20 : 23\)/);
+  assert.match(c, /let enterKeyHeight = max\(24, min\(ultraWatch \? 40 : \(smallWatch \? 30 : 40\), availableKeys - mainKeyHeight \* 4\)\)/);
+  assert.match(c, /let stackLift: CGFloat = smallWatch \? -10 : -6/);
   assert.match(c, /\.frame\(width: unit \* 2\.05\)/);
   assert.match(c, /KeyButton\(height: enterKeyHeight, fontSize: enterKeyFont, accent: true\)/);
   assert.ok(c.includes('Button(game.decimalKey(language: settings.language))'));

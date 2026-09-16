@@ -231,24 +231,31 @@ struct ContentView: View {
             let height = geometry.size.height
             let unit = (width - columnGap * 2) / 3
 
-            // Refined layout: raise the status block further, slim down the
-            // answer strip, distribute the lower rows more elegantly, and use
-            // more of the available vertical space so buttons feel easier to hit.
+            // Tune the Watch layout by size class: keep the current roomy Ultra
+            // presentation, but apply a denser geometry on smaller cases such
+            // as Series 11 42mm so the whole game stays visible.
             let compactWatch = height < 205
-            let headerHeight: CGFloat = compactWatch ? 30 : 34
-            let sideWidth: CGFloat = compactWatch ? 34 : 38
-            let numberFont: CGFloat = compactWatch ? 42 : (height < 235 ? 46 : 49)
-            let divisionFont: CGFloat = compactWatch ? 11 : 13
-            let sideFont: CGFloat = compactWatch ? 8.5 : 9.5
-            let answerHeight: CGFloat = compactWatch ? 20 : 22
+            let smallWatch = !compactWatch && (width < 190 || height < 230)
+            let ultraWatch = width >= 205 && height >= 245
+
+            let headerHeight: CGFloat = compactWatch ? 30 : (smallWatch ? 30 : 34)
+            let sideWidth: CGFloat = compactWatch ? 34 : (smallWatch ? 34 : 38)
+            let numberFont: CGFloat = compactWatch ? 42 : (smallWatch ? 43 : (height < 235 ? 46 : 49))
+            let divisionFont: CGFloat = compactWatch ? 11 : (smallWatch ? 12 : 13)
+            let sideFont: CGFloat = compactWatch ? 8.5 : (smallWatch ? 8.7 : 9.5)
+            let answerHeight: CGFloat = compactWatch ? 20 : (smallWatch ? 19 : 22)
+            let answerFont: CGFloat = compactWatch ? 21 : (smallWatch ? 20 : 23)
+            let bottomSafety: CGFloat = smallWatch ? 6 : 0
             let totalGaps = rowGap * 6
-            let reserved = headerHeight + answerHeight + totalGaps
+            let reserved = headerHeight + answerHeight + totalGaps + bottomSafety
             let availableKeys = height - reserved
-            let rawMainKeyHeight = (availableKeys - 28) / 4
-            let mainKeyHeight = max(27, min(35, rawMainKeyHeight))
-            let enterKeyHeight = max(24, min(40, availableKeys - mainKeyHeight * 4))
+            let rawMainKeyHeight = (availableKeys - (smallWatch ? 24 : 28)) / 4
+            let mainKeyHeight = max(compactWatch ? 27 : (smallWatch ? 25 : 27), min(smallWatch ? 32 : 35, rawMainKeyHeight))
+            let enterKeyHeight = max(24, min(ultraWatch ? 40 : (smallWatch ? 30 : 40), availableKeys - mainKeyHeight * 4))
             let keyFont = max(17, min(20, mainKeyHeight * 0.56))
             let enterKeyFont = max(16, min(19, enterKeyHeight * 0.56))
+            let headerLift: CGFloat = smallWatch ? -11 : -9
+            let stackLift: CGFloat = smallWatch ? -10 : -6
 
             VStack(spacing: rowGap) {
                 HStack(alignment: .top, spacing: 2) {
@@ -267,7 +274,7 @@ struct ContentView: View {
                     .font(.system(size: sideFont, weight: .semibold, design: .rounded))
                     .foregroundStyle(PorSetePalette.secondaryText)
                     .frame(width: sideWidth, height: headerHeight, alignment: .topLeading)
-                    .offset(y: -9)
+                    .offset(y: headerLift)
 
                     VStack(spacing: -7) {
                         Text("\(game.number)")
@@ -280,7 +287,7 @@ struct ContentView: View {
                             .foregroundStyle(PorSetePalette.secondaryText)
                     }
                     .frame(maxWidth: .infinity, maxHeight: headerHeight, alignment: .top)
-                    .offset(y: -9)
+                    .offset(y: headerLift)
 
                     VStack(alignment: .trailing, spacing: 1) {
                         Text("✓\(game.correctInPhase)/10")
@@ -290,13 +297,13 @@ struct ContentView: View {
                     .foregroundStyle(PorSetePalette.secondaryText)
                     .monospacedDigit()
                     .frame(width: sideWidth, height: headerHeight, alignment: .topTrailing)
-                    .offset(y: -9)
+                    .offset(y: headerLift)
                 }
                 .frame(height: headerHeight, alignment: .top)
 
                 let displayed = game.displayedInput(language: settings.language)
                 Text(displayed.isEmpty ? " " : displayed)
-                    .font(.system(size: height < 205 ? 21 : 23, weight: .bold, design: .rounded))
+                    .font(.system(size: answerFont, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .lineLimit(1)
                     .minimumScaleFactor(0.55)
@@ -359,7 +366,7 @@ struct ContentView: View {
                 .frame(height: enterKeyHeight)
             }
             .padding(.horizontal, 2)
-            .offset(y: -6)
+            .offset(y: stackLift)
             .frame(maxHeight: .infinity, alignment: .top)
         }
         .alert(item: $game.mistake) { mistake in
