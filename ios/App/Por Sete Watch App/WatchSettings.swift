@@ -47,7 +47,11 @@ enum L10n {
         "resume":[.ptBR:"Continuar jogo",.en:"Resume game",.es:"Continuar juego"],
         "paused":[.ptBR:"Jogo pausado",.en:"Game paused",.es:"Juego pausado"],
         "decimalSeparator":[.ptBR:"Separador decimal",.en:"Decimal separator",.es:"Separador decimal"],
-        "delete":[.ptBR:"Apagar",.en:"Delete",.es:"Borrar"]
+        "delete":[.ptBR:"Apagar",.en:"Delete",.es:"Borrar"],
+        "yourAnswer":[.ptBR:"Sua resposta",.en:"Your answer",.es:"Tu respuesta"],
+        "endGameQuestion":[.ptBR:"Encerrar o jogo?",.en:"End game?",.es:"¿Terminar el juego?"],
+        "endGame":[.ptBR:"Encerrar jogo",.en:"End game",.es:"Terminar juego"],
+        "returnToGame":[.ptBR:"Voltar ao jogo",.en:"Back to game",.es:"Volver al juego"]
     ]
     static func value(_ key:String, language:WatchLanguage)->String { table[key]?[language] ?? key }
 }

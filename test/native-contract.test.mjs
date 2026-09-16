@@ -133,3 +133,46 @@ test('Ultra usa orçamento vertical próprio sem alterar o Series 11', () => {
   assert.match(c, /let stackLift: CGFloat = anchoredWatch \? 0 : -6/);
   assert.match(c, /let smallEnterKeyHeight = min\(36, max\(26, keyboardAvailableHeight \* 0\.20\)\)/);
 });
+
+
+test('Watch mostra divisão, resposta correta e resposta do usuário ao errar', () => {
+  const c = read('ios/App/Por Sete Watch App/ContentView.swift');
+  const e = read('ios/App/Por Sete Watch App/GameEngine.swift');
+  const s = read('ios/App/Por Sete Watch App/WatchSettings.swift');
+  assert.match(e, /let entered: String/);
+  assert.match(c, /mistake\.number\) ÷ 7 = \?/);
+  assert.ok(c.includes('settings.text("correctAnswer")'));
+  assert.ok(c.includes('localized(mistake.correct)'));
+  assert.ok(c.includes('settings.text("yourAnswer")'));
+  assert.ok(c.includes('localized(mistake.entered)'));
+  assert.ok(s.includes('"yourAnswer"'));
+});
+
+test('Watch long press de 1 segundo abre confirmação de saída em tela inteira', () => {
+  const c = read('ios/App/Por Sete Watch App/ContentView.swift');
+  const e = read('ios/App/Por Sete Watch App/GameEngine.swift');
+  const s = read('ios/App/Por Sete Watch App/WatchSettings.swift');
+  assert.match(c, /DragGesture\(minimumDistance: 0\)/);
+  assert.match(c, /Task\.sleep\(nanoseconds: 1_000_000_000\)/);
+  assert.match(c, /if showExitConfirmation && game\.screen == \.playing/);
+  assert.ok(c.includes('endGameFromExitConfirmation'));
+  assert.ok(c.includes('returnToGameFromExitConfirmation'));
+  assert.match(e, /@Published var exitConfirmationPaused = false/);
+  assert.match(e, /func pauseForExitConfirmation\(at date: Date = Date\(\)\)/);
+  assert.match(e, /func resumeFromExitConfirmation\(\)/);
+  assert.ok(s.includes('"endGameQuestion"'));
+  assert.ok(s.includes('"endGame"'));
+  assert.ok(s.includes('"returnToGame"'));
+});
+
+test('Watch pausa o relógio desde o início do long press e bloqueia ações atrás da confirmação', () => {
+  const c = read('ios/App/Por Sete Watch App/ContentView.swift');
+  const e = read('ios/App/Por Sete Watch App/GameEngine.swift');
+  assert.match(c, /if longPressStartedAt == nil \{\s*game\.tick\(now: now\)/);
+  assert.match(c, /game\.pauseForExitConfirmation\(at: startedAt\)/);
+  assert.match(e, /func submitAnswer\(\) \{\s*guard[^\n]*!exitConfirmationPaused/);
+  assert.match(e, /pauseForBackground\(\)[\s\S]*?!exitConfirmationPaused/);
+  assert.match(e, /goHome\(\)[\s\S]*?exitConfirmationPaused = false/);
+  assert.match(c, /cancelLongPressCandidate\(\)\s*game\.pauseForBackground\(\)/);
+  assert.match(c, /guard game\.exitConfirmationPaused else \{ return \}/);
+});

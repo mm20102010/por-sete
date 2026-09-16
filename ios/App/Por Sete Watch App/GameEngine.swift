@@ -28,6 +28,7 @@ final class WatchGameEngine: ObservableObject {
     @Published var input = ""
     @Published var mistake: WatchMistake?
     @Published var backgroundPaused = false
+    @Published var exitConfirmationPaused = false
     @Published var finalElapsed: TimeInterval = 0
 
     private(set) var difficulty: WatchDifficulty = .beginner
@@ -51,6 +52,7 @@ final class WatchGameEngine: ObservableObject {
         input = ""
         mistake = nil
         backgroundPaused = false
+        exitConfirmationPaused = false
         elapsedAccumulated = 0
         finalElapsed = 0
         activeStartedAt = Date()
@@ -62,6 +64,7 @@ final class WatchGameEngine: ObservableObject {
         screen = .home
         mistake = nil
         backgroundPaused = false
+        exitConfirmationPaused = false
         activeStartedAt = nil
         questionDeadline = nil
         questionRemaining = nil
@@ -72,7 +75,7 @@ final class WatchGameEngine: ObservableObject {
     }
 
     func appendDigit(_ value: String) {
-        guard screen == .playing, mistake == nil, !backgroundPaused else { return }
+        guard screen == .playing, mistake == nil, !backgroundPaused, !exitConfirmationPaused else { return }
 
         if value == "decimal" {
             guard !input.contains(".") else { return }
@@ -83,7 +86,7 @@ final class WatchGameEngine: ObservableObject {
     }
 
     func backspace() {
-        guard screen == .playing, mistake == nil, !backgroundPaused, !input.isEmpty else { return }
+        guard screen == .playing, mistake == nil, !backgroundPaused, !exitConfirmationPaused, !input.isEmpty else { return }
         input.removeLast()
     }
 
@@ -108,6 +111,7 @@ final class WatchGameEngine: ObservableObject {
             screen == .playing,
             mistake == nil,
             !backgroundPaused,
+            !exitConfirmationPaused,
             let deadline = questionDeadline,
             now >= deadline
         else { return }
@@ -122,13 +126,28 @@ final class WatchGameEngine: ObservableObject {
     }
 
     func pauseForBackground() {
-        guard screen == .playing, mistake == nil, !backgroundPaused else { return }
+        guard screen == .playing, mistake == nil, !backgroundPaused, !exitConfirmationPaused else { return }
         pause(at: Date())
         backgroundPaused = true
     }
 
+    func pauseForExitConfirmation(at date: Date = Date()) {
+        guard screen == .playing, mistake == nil, !backgroundPaused, !exitConfirmationPaused else { return }
+        pause(at: date)
+        exitConfirmationPaused = true
+    }
+
+    func resumeFromExitConfirmation() {
+        guard screen == .playing, exitConfirmationPaused else { return }
+        exitConfirmationPaused = false
+        activeStartedAt = Date()
+        if let remaining = questionRemaining {
+            questionDeadline = Date().addingTimeInterval(remaining)
+        }
+    }
+
     func resumeFromBackground() {
-        guard screen == .playing, backgroundPaused else { return }
+        guard screen == .playing, backgroundPaused, !exitConfirmationPaused else { return }
         backgroundPaused = false
         activeStartedAt = Date()
         if let remaining = questionRemaining {
@@ -137,7 +156,7 @@ final class WatchGameEngine: ObservableObject {
     }
 
     func submitAnswer() {
-        guard screen == .playing, mistake == nil, !backgroundPaused, !input.isEmpty else { return }
+        guard screen == .playing, mistake == nil, !backgroundPaused, !exitConfirmationPaused, !input.isEmpty else { return }
 
         tick()
         guard mistake == nil else { return }
@@ -206,6 +225,7 @@ final class WatchGameEngine: ObservableObject {
         activeStartedAt = nil
         questionDeadline = nil
         questionRemaining = nil
+        exitConfirmationPaused = false
         screen = target
     }
 

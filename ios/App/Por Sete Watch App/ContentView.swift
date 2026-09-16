@@ -66,6 +66,9 @@ struct ContentView: View {
     @StateObject private var settings = WatchSettings()
     @StateObject private var game = WatchGameEngine()
     @State private var shell: Screen = .home
+    @State private var showExitConfirmation = false
+    @State private var longPressStartedAt: Date?
+    @State private var longPressTask: Task<Void, Never>?
 
     private let ticker = Timer.publish(every: 0.10, on: .main, in: .common).autoconnect()
 
@@ -85,10 +88,13 @@ struct ContentView: View {
             content
         }
         .onReceive(ticker) { now in
-            game.tick(now: now)
+            if longPressStartedAt == nil {
+                game.tick(now: now)
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase != .active {
+                cancelLongPressCandidate()
                 game.pauseForBackground()
             }
         }
@@ -101,7 +107,11 @@ struct ContentView: View {
 
     @ViewBuilder
     private var content: some View {
-        if game.screen == .playing {
+        if showExitConfirmation && game.screen == .playing {
+            exitConfirmationView
+        } else if let mistake = game.mistake {
+            mistakeView(mistake)
+        } else if game.screen == .playing {
             gameView
         } else if game.screen == .victory || game.screen == .gameOver {
             resultView
@@ -462,17 +472,92 @@ struct ContentView: View {
                 return (width < 195 || width >= 205) ? .bottom : []
             }()
         )
-        .alert(item: $game.mistake) { mistake in
-            Alert(
-                title: Text(mistake.timeout ? settings.text("timeout") : settings.text("incorrect")),
-                message: Text(
-                    "\(mistake.number) ÷ 7\n\(settings.text("correctAnswer")): \(localized(mistake.correct))"
-                ),
-                dismissButton: .default(Text(settings.text("continue"))) {
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    beginLongPressCandidate()
+                }
+                .onEnded { _ in
+                    cancelLongPressCandidate()
+                }
+        )
+    }
+
+    private func mistakeView(_ mistake: WatchMistake) -> some View {
+        let entered = mistake.timeout
+            ? settings.text("timeout")
+            : localized(mistake.entered)
+        let smallWatch = WKInterfaceDevice.current().screenBounds.width < 195
+
+        return ScrollView {
+            VStack(spacing: smallWatch ? 6 : 8) {
+                Text(mistake.timeout ? settings.text("timeout") : settings.text("incorrect"))
+                    .font(.headline)
+                    .foregroundStyle(mistake.timeout ? PorSetePalette.secondaryText : .orange)
+
+                Text("\(mistake.number) ÷ 7 = ?")
+                    .font(.system(size: smallWatch ? 21 : 24, weight: .black, design: .rounded))
+                    .monospacedDigit()
+
+                VStack(alignment: .leading, spacing: 5) {
+                    HStack(alignment: .firstTextBaseline, spacing: 5) {
+                        Text("✓")
+                            .foregroundStyle(.green)
+                        Text("\(settings.text("correctAnswer")): \(localized(mistake.correct))")
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.55)
+                    }
+
+                    HStack(alignment: .firstTextBaseline, spacing: 5) {
+                        Text("✕")
+                            .foregroundStyle(.red)
+                        Text("\(settings.text("yourAnswer")): \(entered)")
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.50)
+                    }
+                }
+                .font(.system(size: smallWatch ? 13 : 15, weight: .semibold, design: .rounded))
+                .monospacedDigit()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 4)
+
+                Button(settings.text("continue")) {
                     game.continueAfterMistake()
                 }
-            )
+                .buttonStyle(PrimaryButton(minHeight: smallWatch ? 34 : 38))
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, smallWatch ? 4 : 7)
         }
+    }
+
+    private var exitConfirmationView: some View {
+        let smallWatch = WKInterfaceDevice.current().screenBounds.width < 195
+
+        return VStack(spacing: smallWatch ? 8 : 10) {
+            Image(systemName: "questionmark.circle")
+                .font(.system(size: smallWatch ? 27 : 31, weight: .semibold))
+                .foregroundStyle(PorSetePalette.secondaryText)
+
+            Text(settings.text("endGameQuestion"))
+                .font(.system(size: smallWatch ? 18 : 20, weight: .bold, design: .rounded))
+                .multilineTextAlignment(.center)
+
+            Button(settings.text("returnToGame")) {
+                returnToGameFromExitConfirmation()
+            }
+            .buttonStyle(PrimaryButton(minHeight: smallWatch ? 34 : 38))
+
+            Button(role: .destructive) {
+                endGameFromExitConfirmation()
+            } label: {
+                Text(settings.text("endGame"))
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+        }
+        .padding(.horizontal, 10)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
 
     private var resultView: some View {
@@ -501,11 +586,66 @@ struct ContentView: View {
         .padding(.horizontal, 8)
     }
 
+    private func beginLongPressCandidate() {
+        guard
+            game.screen == .playing,
+            game.mistake == nil,
+            !game.backgroundPaused,
+            !game.exitConfirmationPaused,
+            !showExitConfirmation,
+            longPressStartedAt == nil
+        else { return }
+
+        let startedAt = Date()
+        longPressStartedAt = startedAt
+        longPressTask?.cancel()
+        longPressTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            guard
+                !Task.isCancelled,
+                longPressStartedAt == startedAt,
+                game.screen == .playing,
+                game.mistake == nil,
+                !game.backgroundPaused,
+                !game.exitConfirmationPaused,
+                !showExitConfirmation
+            else { return }
+
+            game.pauseForExitConfirmation(at: startedAt)
+            guard game.exitConfirmationPaused else { return }
+            showExitConfirmation = true
+            longPressStartedAt = nil
+            longPressTask = nil
+            WKInterfaceDevice.current().play(.click)
+        }
+    }
+
+    private func cancelLongPressCandidate() {
+        longPressTask?.cancel()
+        longPressTask = nil
+        longPressStartedAt = nil
+    }
+
+    private func returnToGameFromExitConfirmation() {
+        cancelLongPressCandidate()
+        game.resumeFromExitConfirmation()
+        showExitConfirmation = false
+    }
+
+    private func endGameFromExitConfirmation() {
+        cancelLongPressCandidate()
+        showExitConfirmation = false
+        game.goHome()
+        shell = .home
+    }
+
     private func localized(_ value: String) -> String {
         settings.language == .en ? value : value.replacingOccurrences(of: ".", with: ",")
     }
 
     private func startGame() {
+        cancelLongPressCandidate()
+        showExitConfirmation = false
         shell = .home
         game.startGame(settings: settings)
     }
