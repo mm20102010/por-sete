@@ -229,27 +229,26 @@ struct ContentView: View {
             let columnGap: CGFloat = 4
             let width = geometry.size.width
             let height = geometry.size.height
-            let unit = (width - columnGap * 3) / 4
+            let unit = (width - columnGap * 2) / 3
 
-            // Rebalanced for five keyboard rows. The status block is pushed as
-            // high as the safe area allows, the answer strip is thinner, and
-            // the bottom rows use narrower controls so the main numeric keys can
-            // stay large and the Enter key never gets clipped.
+            // Refined layout: raise the status block further, slim down the
+            // answer strip, distribute the lower rows more elegantly, and use
+            // more of the available vertical space so buttons feel easier to hit.
             let compactWatch = height < 205
-            let headerHeight: CGFloat = compactWatch ? 36 : 40
-            let sideWidth: CGFloat = compactWatch ? 36 : 40
-            let numberFont: CGFloat = compactWatch ? 40 : (height < 235 ? 44 : 47)
-            let divisionFont: CGFloat = compactWatch ? 12 : 14
-            let sideFont: CGFloat = compactWatch ? 9 : 9.5
-            let answerHeight: CGFloat = compactWatch ? 16 : 18
+            let headerHeight: CGFloat = compactWatch ? 34 : 38
+            let sideWidth: CGFloat = compactWatch ? 34 : 38
+            let numberFont: CGFloat = compactWatch ? 41 : (height < 235 ? 45 : 48)
+            let divisionFont: CGFloat = compactWatch ? 11 : 13
+            let sideFont: CGFloat = compactWatch ? 8.5 : 9.5
+            let answerHeight: CGFloat = compactWatch ? 10 : 12
             let totalGaps = rowGap * 6
             let reserved = headerHeight + answerHeight + totalGaps
             let availableKeys = height - reserved
-            let rawMainKeyHeight = (availableKeys - 2 * 22) / 4
-            let mainKeyHeight = max(24, min(31, rawMainKeyHeight))
-            let secondaryKeyHeight = max(20, min(24, availableKeys - mainKeyHeight * 4))
-            let keyFont = max(16, min(19, mainKeyHeight * 0.58))
-            let secondaryKeyFont = max(14, min(18, secondaryKeyHeight * 0.58))
+            let rawMainKeyHeight = (availableKeys - 28) / 4
+            let mainKeyHeight = max(27, min(35, rawMainKeyHeight))
+            let enterKeyHeight = max(24, min(30, availableKeys - mainKeyHeight * 4))
+            let keyFont = max(17, min(20, mainKeyHeight * 0.56))
+            let enterKeyFont = max(16, min(19, enterKeyHeight * 0.56))
 
             VStack(spacing: rowGap) {
                 HStack(alignment: .top, spacing: 2) {
@@ -268,9 +267,9 @@ struct ContentView: View {
                     .font(.system(size: sideFont, weight: .semibold, design: .rounded))
                     .foregroundStyle(PorSetePalette.secondaryText)
                     .frame(width: sideWidth, height: headerHeight, alignment: .topLeading)
-                    .offset(y: -2)
+                    .offset(y: -3)
 
-                    VStack(spacing: -6) {
+                    VStack(spacing: -7) {
                         Text("\(game.number)")
                             .font(.system(size: numberFont, weight: .black, design: .rounded))
                             .foregroundStyle(.white)
@@ -281,7 +280,7 @@ struct ContentView: View {
                             .foregroundStyle(PorSetePalette.secondaryText)
                     }
                     .frame(maxWidth: .infinity, maxHeight: headerHeight, alignment: .top)
-                    .offset(y: -2)
+                    .offset(y: -3)
 
                     VStack(alignment: .trailing, spacing: 1) {
                         Text("✓\(game.correctInPhase)/10")
@@ -291,19 +290,17 @@ struct ContentView: View {
                     .foregroundStyle(PorSetePalette.secondaryText)
                     .monospacedDigit()
                     .frame(width: sideWidth, height: headerHeight, alignment: .topTrailing)
-                    .offset(y: -2)
+                    .offset(y: -3)
                 }
                 .frame(height: headerHeight, alignment: .top)
 
                 let displayed = game.displayedInput(language: settings.language)
                 Text(displayed.isEmpty ? " " : displayed)
-                    .font(.system(size: height < 205 ? 17 : 19, weight: .bold, design: .rounded))
+                    .font(.system(size: height < 205 ? 15 : 17, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .lineLimit(1)
                     .minimumScaleFactor(0.55)
                     .frame(maxWidth: .infinity, minHeight: answerHeight, maxHeight: answerHeight)
-                    .background(.black.opacity(0.13))
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
                 ForEach([["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"]], id: \.self) { row in
                     HStack(spacing: columnGap) {
@@ -318,13 +315,18 @@ struct ContentView: View {
                 }
 
                 HStack(spacing: columnGap) {
-                    Spacer(minLength: 0)
+                    Button(game.decimalKey(language: settings.language)) {
+                        game.appendDigit("decimal")
+                    }
+                    .buttonStyle(KeyButton(height: mainKeyHeight, fontSize: keyFont))
+                    .frame(width: unit)
+                    .accessibilityLabel(settings.text("decimalSeparator"))
 
                     Button("0") {
                         game.appendDigit("0")
                     }
                     .buttonStyle(KeyButton(height: mainKeyHeight, fontSize: keyFont))
-                    .frame(width: unit * 1.18)
+                    .frame(width: unit)
 
                     Button {
                         game.backspace()
@@ -332,39 +334,30 @@ struct ContentView: View {
                         Image(systemName: "delete.left")
                     }
                     .buttonStyle(KeyButton(height: mainKeyHeight, fontSize: keyFont))
-                    .frame(width: unit * 0.82)
+                    .frame(width: unit)
                     .accessibilityLabel(settings.text("delete"))
-
-                    Spacer(minLength: 0)
                 }
                 .frame(height: mainKeyHeight)
 
                 HStack(spacing: columnGap) {
                     Spacer(minLength: 0)
 
-                    Button(game.decimalKey(language: settings.language)) {
-                        game.appendDigit("decimal")
-                    }
-                    .buttonStyle(KeyButton(height: secondaryKeyHeight, fontSize: secondaryKeyFont))
-                    .frame(width: unit * 0.80)
-                    .accessibilityLabel(settings.text("decimalSeparator"))
-
                     Button {
                         submitAnswer()
                     } label: {
                         Image(systemName: "return")
-                            .font(.system(size: max(15, secondaryKeyFont), weight: .black))
+                            .font(.system(size: max(16, enterKeyFont), weight: .black))
                     }
-                    .buttonStyle(KeyButton(height: secondaryKeyHeight, fontSize: secondaryKeyFont, accent: true))
-                    .frame(width: unit * 1.55)
+                    .buttonStyle(KeyButton(height: enterKeyHeight, fontSize: enterKeyFont, accent: true))
+                    .frame(width: unit * 2.05)
                     .accessibilityLabel(settings.text("submit"))
 
                     Spacer(minLength: 0)
                 }
-                .frame(height: secondaryKeyHeight)
+                .frame(height: enterKeyHeight)
             }
             .padding(.horizontal, 2)
-            .offset(y: -4)
+            .offset(y: -6)
             .frame(maxHeight: .infinity, alignment: .top)
         }
         .alert(item: $game.mistake) { mistake in

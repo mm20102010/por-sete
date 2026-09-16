@@ -22,12 +22,12 @@ test('Watch tem home, engrenagem, teclado e complication', () => {
 test('Watch mantém jogo glanceable e engrenagem central', () => {
   const c = read('ios/App/Por Sete Watch App/ContentView.swift');
   assert.match(c, /\.frame\(maxWidth: \.infinity, alignment: \.center\)/);
-  assert.match(c, /let rawMainKeyHeight = \(availableKeys - 2 \* 22\) \/ 4/);
+  assert.match(c, /let rawMainKeyHeight = \(availableKeys - 28\) \/ 4/);
   assert.match(c, /HStack\(alignment: \.top, spacing: 2\)/);
-  assert.match(c, /let numberFont: CGFloat = compactWatch \? 40 : \(height < 235 \? 44 : 47\)/);
-  assert.ok(c.includes('correctInPhase)/10'));
-  assert.ok(c.includes('game.errors)/3'));
-  assert.match(c, /\.frame\(width: unit \* 1\.18\)/);
-  assert.match(c, /\.frame\(width: unit \* 1\.55\)/);
-  assert.match(c, /KeyButton\(height: secondaryKeyHeight, fontSize: secondaryKeyFont, accent: true\)/);
+  assert.match(c, /let numberFont: CGFloat = compactWatch \? 41 : \(height < 235 \? 45 : 48\)/);
+  assert.match(c, /let answerHeight: CGFloat = compactWatch \? 10 : 12/);
+  assert.match(c, /\.frame\(width: unit \* 2\.05\)/);
+  assert.match(c, /KeyButton\(height: enterKeyHeight, fontSize: enterKeyFont, accent: true\)/);
+  assert.ok(c.includes('Button(game.decimalKey(language: settings.language))'));
+  assert.ok(c.includes('Image(systemName: "delete.left")'));
 });
