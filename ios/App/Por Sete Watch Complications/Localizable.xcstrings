@@ -1,24 +1,24 @@
 {
   "sourceLanguage": "pt",
   "strings": {
-    "complication.name": {
+    "/7": {
       "localizations": {
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Por Sete · Ícone"
+            "value": "/7"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Por Sete · Icon"
+            "value": "/7"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Por Sete · Icono"
+            "value": "/7"
           }
         }
       }
@@ -41,6 +41,50 @@
           "stringUnit": {
             "state": "translated",
             "value": "Icono de Por Sete. Toca para abrir la app."
+          }
+        }
+      }
+    },
+    "complication.name": {
+      "localizations": {
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por Sete · Ícone"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por Sete · Icon"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por Sete · Icono"
+          }
+        }
+      }
+    },
+    "Por Sete": {
+      "localizations": {
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por Sete"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por Sete"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por Sete"
           }
         }
       }

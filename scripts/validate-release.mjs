@@ -84,6 +84,19 @@ if (!errors.length) {
     if (catalog.version !== '1.0') {
       errors.push('Localizable.xcstrings da complication sem version 1.0');
     }
+    for (const key of ['/7', 'Por Sete', 'complication.name', 'complication.description']) {
+      const entry = catalog.strings?.[key];
+      if (!entry) {
+        errors.push(`Localizable.xcstrings da complication sem chave: ${key}`);
+        continue;
+      }
+      for (const lang of ['pt', 'en', 'es']) {
+        const value = entry.localizations?.[lang]?.stringUnit?.value;
+        if (typeof value !== 'string' || value.length === 0) {
+          errors.push(`Localizable.xcstrings: ${key} sem tradução ${lang}`);
+        }
+      }
+    }
   } catch (error) {
     errors.push(`Localizable.xcstrings inválido: ${error.message}`);
   }

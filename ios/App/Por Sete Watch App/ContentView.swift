@@ -31,13 +31,15 @@ private struct PrimaryButton: ButtonStyle {
 }
 
 private struct KeyButton: ButtonStyle {
+    var height: CGFloat = 33
+    var fontSize: CGFloat = 18
     var accent = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 18, weight: .bold, design: .rounded))
+            .font(.system(size: fontSize, weight: .bold, design: .rounded))
             .foregroundStyle(.white)
-            .frame(maxWidth: .infinity, minHeight: 33)
+            .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
             .background(
                 accent
                     ? Color.green.opacity(configuration.isPressed ? 0.65 : 0.85)
@@ -132,22 +134,18 @@ struct ContentView: View {
 
             Spacer()
 
-            HStack {
-                Spacer()
-
-                Button {
-                    shell = .settings
-                } label: {
-                    Image(systemName: "gearshape")
-                        .font(.system(size: 18, weight: .semibold))
-                        .frame(width: 44, height: 44)
-                        .background(.white.opacity(0.07))
-                        .clipShape(Circle())
-                        .accessibilityLabel(settings.text("settings"))
-                }
-                .buttonStyle(.plain)
+            Button {
+                shell = .settings
+            } label: {
+                Image(systemName: "gearshape")
+                    .font(.system(size: 18, weight: .semibold))
+                    .frame(width: 44, height: 44)
+                    .background(.white.opacity(0.07))
+                    .clipShape(Circle())
+                    .accessibilityLabel(settings.text("settings"))
             }
-            .padding(.horizontal, 4)
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity, alignment: .center)
         }
         .padding(.vertical, 4)
     }
@@ -227,64 +225,101 @@ struct ContentView: View {
 
     private var gameView: some View {
         GeometryReader { geometry in
-            let gap: CGFloat = 4
+            let rowGap: CGFloat = 3
+            let columnGap: CGFloat = 4
             let width = geometry.size.width
-            let unit = (width - gap * 3) / 4
+            let height = geometry.size.height
+            let unit = (width - columnGap * 3) / 4
 
-            VStack(spacing: 4) {
-                HStack(spacing: 5) {
-                    Text("\(settings.text("phase")) \(game.phase)")
-                    Spacer(minLength: 2)
-                    Text("✓\(game.correctInPhase)/10  ✕\(game.errors)/3")
-                    if let left = game.timeLeft() {
-                        Text(String(format: "%.1f", left))
-                            .monospacedDigit()
+            // Keep the entire game on one glanceable watch screen. The header and
+            // answer field have fixed compact heights; the keyboard consumes the
+            // remaining space and adapts between smaller and larger Watch displays.
+            let headerHeight: CGFloat = height < 205 ? 41 : 44
+            let answerHeight: CGFloat = height < 205 ? 22 : 24
+            let reserved = headerHeight + answerHeight + rowGap * 2 + columnGap * 3
+            let rawKeyHeight = (height - reserved) / 4
+            let keyHeight = max(24, min(34, rawKeyHeight))
+            let keyFont = max(16, min(19, keyHeight * 0.58))
+
+            VStack(spacing: rowGap) {
+                HStack(alignment: .center, spacing: 3) {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("\(settings.text("phase")) \(game.phase)")
+                            .lineLimit(1)
+                        if let left = game.timeLeft() {
+                            Text(String(format: "%.1f s", left))
+                                .monospacedDigit()
+                                .lineLimit(1)
+                        } else {
+                            Text(" ")
+                                .accessibilityHidden(true)
+                        }
                     }
-                }
-                .font(.system(size: 10, weight: .semibold, design: .rounded))
-                .foregroundStyle(PorSetePalette.secondaryText)
+                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .foregroundStyle(PorSetePalette.secondaryText)
+                    .frame(width: 50, alignment: .leading)
 
-                VStack(spacing: -2) {
-                    Text("\(game.number)")
-                        .font(.system(size: 30, weight: .black, design: .rounded))
-                    Text("÷ 7")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundStyle(PorSetePalette.secondaryText)
+                    Spacer(minLength: 0)
+
+                    VStack(spacing: -3) {
+                        Text("\(game.number)")
+                            .font(.system(size: height < 205 ? 27 : 30, weight: .black, design: .rounded))
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.72)
+                        Text("÷ 7")
+                            .font(.system(size: height < 205 ? 13 : 14, weight: .bold, design: .rounded))
+                            .foregroundStyle(PorSetePalette.secondaryText)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+
+                    Spacer(minLength: 0)
+
+                    VStack(alignment: .trailing, spacing: 1) {
+                        Text("✓\(game.correctInPhase)/10")
+                        Text("✕\(game.errors)/3")
+                    }
+                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .foregroundStyle(PorSetePalette.secondaryText)
+                    .monospacedDigit()
+                    .frame(width: 50, alignment: .trailing)
                 }
+                .frame(height: headerHeight)
 
                 let displayed = game.displayedInput(language: settings.language)
                 Text(displayed.isEmpty ? "—" : displayed)
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.system(size: height < 205 ? 18 : 20, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .lineLimit(1)
                     .minimumScaleFactor(0.55)
-                    .frame(maxWidth: .infinity, minHeight: 27)
+                    .frame(maxWidth: .infinity, minHeight: answerHeight, maxHeight: answerHeight)
                     .background(.black.opacity(0.18))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
                 ForEach([["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"]], id: \.self) { row in
-                    HStack(spacing: gap) {
+                    HStack(spacing: columnGap) {
                         ForEach(row, id: \.self) { value in
                             Button(value) {
                                 game.appendDigit(value)
                             }
-                            .buttonStyle(KeyButton())
+                            .buttonStyle(KeyButton(height: keyHeight, fontSize: keyFont))
                         }
                     }
+                    .frame(height: keyHeight)
                 }
 
-                HStack(spacing: gap) {
+                HStack(spacing: columnGap) {
                     Button(game.decimalKey(language: settings.language)) {
                         game.appendDigit("decimal")
                     }
-                    .buttonStyle(KeyButton())
-                    .frame(width: unit * 0.72)
+                    .buttonStyle(KeyButton(height: keyHeight, fontSize: keyFont))
+                    .frame(width: unit * 0.68)
                     .accessibilityLabel(settings.text("decimalSeparator"))
 
                     Button("0") {
                         game.appendDigit("0")
                     }
-                    .buttonStyle(KeyButton())
+                    .buttonStyle(KeyButton(height: keyHeight, fontSize: keyFont))
                     .frame(width: unit)
 
                     Button {
@@ -292,22 +327,24 @@ struct ContentView: View {
                     } label: {
                         Image(systemName: "delete.left")
                     }
-                    .buttonStyle(KeyButton())
-                    .frame(width: unit * 0.72)
+                    .buttonStyle(KeyButton(height: keyHeight, fontSize: keyFont))
+                    .frame(width: unit * 0.68)
                     .accessibilityLabel(settings.text("delete"))
 
                     Button {
                         submitAnswer()
                     } label: {
                         Image(systemName: "return")
-                            .font(.system(size: 18, weight: .black))
+                            .font(.system(size: max(16, keyFont), weight: .black))
                     }
-                    .buttonStyle(KeyButton(accent: true))
+                    .buttonStyle(KeyButton(height: keyHeight, fontSize: keyFont, accent: true))
                     .frame(maxWidth: .infinity)
                     .accessibilityLabel(settings.text("submit"))
                 }
+                .frame(height: keyHeight)
             }
             .padding(.horizontal, 2)
+            .frame(maxHeight: .infinity, alignment: .top)
         }
         .alert(item: $game.mistake) { mistake in
             Alert(
