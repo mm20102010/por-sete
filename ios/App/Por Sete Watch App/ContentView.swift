@@ -235,18 +235,18 @@ struct ContentView: View {
             // answer strip, distribute the lower rows more elegantly, and use
             // more of the available vertical space so buttons feel easier to hit.
             let compactWatch = height < 205
-            let headerHeight: CGFloat = compactWatch ? 32 : 36
+            let headerHeight: CGFloat = compactWatch ? 30 : 34
             let sideWidth: CGFloat = compactWatch ? 34 : 38
             let numberFont: CGFloat = compactWatch ? 42 : (height < 235 ? 46 : 49)
             let divisionFont: CGFloat = compactWatch ? 11 : 13
             let sideFont: CGFloat = compactWatch ? 8.5 : 9.5
-            let answerHeight: CGFloat = compactWatch ? 18 : 20
+            let answerHeight: CGFloat = compactWatch ? 20 : 22
             let totalGaps = rowGap * 6
             let reserved = headerHeight + answerHeight + totalGaps
             let availableKeys = height - reserved
             let rawMainKeyHeight = (availableKeys - 28) / 4
             let mainKeyHeight = max(27, min(35, rawMainKeyHeight))
-            let enterKeyHeight = max(24, min(30, availableKeys - mainKeyHeight * 4))
+            let enterKeyHeight = max(24, min(40, availableKeys - mainKeyHeight * 4))
             let keyFont = max(17, min(20, mainKeyHeight * 0.56))
             let enterKeyFont = max(16, min(19, enterKeyHeight * 0.56))
 
@@ -267,7 +267,7 @@ struct ContentView: View {
                     .font(.system(size: sideFont, weight: .semibold, design: .rounded))
                     .foregroundStyle(PorSetePalette.secondaryText)
                     .frame(width: sideWidth, height: headerHeight, alignment: .topLeading)
-                    .offset(y: -5)
+                    .offset(y: -9)
 
                     VStack(spacing: -7) {
                         Text("\(game.number)")
@@ -280,7 +280,7 @@ struct ContentView: View {
                             .foregroundStyle(PorSetePalette.secondaryText)
                     }
                     .frame(maxWidth: .infinity, maxHeight: headerHeight, alignment: .top)
-                    .offset(y: -5)
+                    .offset(y: -9)
 
                     VStack(alignment: .trailing, spacing: 1) {
                         Text("✓\(game.correctInPhase)/10")
@@ -290,13 +290,13 @@ struct ContentView: View {
                     .foregroundStyle(PorSetePalette.secondaryText)
                     .monospacedDigit()
                     .frame(width: sideWidth, height: headerHeight, alignment: .topTrailing)
-                    .offset(y: -5)
+                    .offset(y: -9)
                 }
                 .frame(height: headerHeight, alignment: .top)
 
                 let displayed = game.displayedInput(language: settings.language)
                 Text(displayed.isEmpty ? " " : displayed)
-                    .font(.system(size: height < 205 ? 19 : 21, weight: .bold, design: .rounded))
+                    .font(.system(size: height < 205 ? 21 : 23, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .lineLimit(1)
                     .minimumScaleFactor(0.55)
@@ -359,7 +359,7 @@ struct ContentView: View {
                 .frame(height: enterKeyHeight)
             }
             .padding(.horizontal, 2)
-            .offset(y: -8)
+            .offset(y: -6)
             .frame(maxHeight: .infinity, alignment: .top)
         }
         .alert(item: $game.mistake) { mistake in

@@ -25,7 +25,8 @@ test('Watch mantém jogo glanceable e engrenagem central', () => {
   assert.match(c, /let rawMainKeyHeight = \(availableKeys - 28\) \/ 4/);
   assert.match(c, /HStack\(alignment: \.top, spacing: 2\)/);
   assert.match(c, /let numberFont: CGFloat = compactWatch \? 42 : \(height < 235 \? 46 : 49\)/);
-  assert.match(c, /let answerHeight: CGFloat = compactWatch \? 18 : 20/);
+  assert.match(c, /let answerHeight: CGFloat = compactWatch \? 20 : 22/);
+  assert.match(c, /let enterKeyHeight = max\(24, min\(40, availableKeys - mainKeyHeight \* 4\)\)/);
   assert.match(c, /\.frame\(width: unit \* 2\.05\)/);
   assert.match(c, /KeyButton\(height: enterKeyHeight, fontSize: enterKeyFont, accent: true\)/);
   assert.ok(c.includes('Button(game.decimalKey(language: settings.language))'));
