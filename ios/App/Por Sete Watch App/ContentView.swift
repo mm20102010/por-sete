@@ -279,32 +279,40 @@ struct ContentView: View {
             let anchoredWatch = smallWatch || ultraWatch
             let compactWatch = height < 205
 
-            let headerHeight: CGFloat = smallWatch ? 26 : (compactWatch ? 30 : 34)
+            let headerHeight: CGFloat = smallWatch ? 26 : (ultraWatch ? 32 : (compactWatch ? 30 : 34))
             let sideWidth: CGFloat = smallWatch ? 34 : (compactWatch ? 34 : 38)
             let numberFont: CGFloat = smallWatch ? 42 : (compactWatch ? 42 : (height < 235 ? 46 : 49))
             let divisionFont: CGFloat = smallWatch ? 11 : (compactWatch ? 11 : 13)
             let sideFont: CGFloat = smallWatch ? 8.5 : (compactWatch ? 8.5 : 9.5)
-            let answerHeight: CGFloat = smallWatch ? 19 : (compactWatch ? 20 : (ultraWatch ? 26 : 22))
-            let answerFont: CGFloat = smallWatch ? 20 : (compactWatch ? 21 : (ultraWatch ? 28 : 23))
+            let answerHeight: CGFloat = smallWatch ? 19 : (ultraWatch ? 32 : (compactWatch ? 20 : 22))
+            let answerFont: CGFloat = smallWatch ? 20 : (ultraWatch ? 30 : (compactWatch ? 21 : 23))
 
-            // Small Watches are split into a compact top zone and a keyboard
-            // zone anchored to the bottom. This removes the dead space that was
-            // visible below the Enter key on Series 11 42mm.
-            let keyboardBottomInset: CGFloat = anchoredWatch ? 4 : 0
-            let keyboardTopGap: CGFloat = anchoredWatch ? 4 : rowGap
+            // Series 11 and Ultra use a true bottom-anchored vertical budget.
+            // Ultra gets a larger answer strip and a larger bottom inset so the
+            // Enter key remains fully inside the curved display.
+            let keyboardBottomInset: CGFloat = smallWatch ? 4 : (ultraWatch ? 8 : 0)
+            let keyboardTopGap: CGFloat = smallWatch ? 4 : (ultraWatch ? 3 : rowGap)
             let keyboardAvailableHeight = max(
                 0,
                 height - headerHeight - answerHeight - keyboardTopGap - keyboardBottomInset
             )
 
-            // Five keyboard rows: four equal main rows and one Enter row.
+            // Series 11 geometry stays as approved.
             let smallEnterKeyHeight = min(36, max(26, keyboardAvailableHeight * 0.20))
             let smallMainKeyHeight = max(
                 1,
                 (keyboardAvailableHeight - smallEnterKeyHeight - rowGap * 4) / 4
             )
 
-            // Preserve the approved geometry on regular and Ultra Watches.
+            // Ultra trades a small amount of Enter height for a much more legible
+            // answer while keeping the numeric rows large and fitting exactly.
+            let ultraEnterKeyHeight = min(32, max(26, keyboardAvailableHeight * 0.17))
+            let ultraMainKeyHeight = max(
+                1,
+                (keyboardAvailableHeight - ultraEnterKeyHeight - rowGap * 4) / 4
+            )
+
+            // Intermediate Watches preserve the previous geometry.
             let totalGaps = rowGap * 6
             let regularAvailableKeys = max(
                 0,
@@ -314,17 +322,17 @@ struct ContentView: View {
             let regularMainKeyHeight = max(27, min(35, regularRawMainKeyHeight))
             let regularEnterKeyHeight = max(
                 24,
-                min(ultraWatch ? 40 : 36, regularAvailableKeys - regularMainKeyHeight * 4)
+                min(36, regularAvailableKeys - regularMainKeyHeight * 4)
             )
 
-            let mainKeyHeight = smallWatch ? smallMainKeyHeight : regularMainKeyHeight
-            let enterKeyHeight = smallWatch ? smallEnterKeyHeight : regularEnterKeyHeight
+            let mainKeyHeight = smallWatch ? smallMainKeyHeight : (ultraWatch ? ultraMainKeyHeight : regularMainKeyHeight)
+            let enterKeyHeight = smallWatch ? smallEnterKeyHeight : (ultraWatch ? ultraEnterKeyHeight : regularEnterKeyHeight)
             let keyFont = max(17, min(21, mainKeyHeight * 0.56))
             let enterKeyFont = max(16, min(20, enterKeyHeight * 0.56))
             let headerLift: CGFloat = smallWatch ? -13 : -9
-            let stackLift: CGFloat = smallWatch ? 0 : -6
+            let stackLift: CGFloat = anchoredWatch ? 0 : -6
 
-            VStack(spacing: smallWatch ? 0 : rowGap) {
+            VStack(spacing: anchoredWatch ? 0 : rowGap) {
                 HStack(alignment: .top, spacing: 2) {
                     VStack(alignment: .leading, spacing: 1) {
                         Text("\(settings.text("phase")) \(game.phase)")
