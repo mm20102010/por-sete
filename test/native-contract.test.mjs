@@ -24,6 +24,7 @@ test('Watch mantém jogo glanceable e engrenagem central', () => {
   assert.match(c, /let deviceWidth = WKInterfaceDevice\.current\(\)\.screenBounds\.width/);
   assert.match(c, /let smallWatch = deviceWidth < 195/);
   assert.match(c, /let ultraWatch = deviceWidth >= 205/);
+  assert.match(c, /let anchoredWatch = smallWatch \|\| ultraWatch/);
   assert.match(c, /let keyboardAvailableHeight = max\(/);
   assert.match(c, /let smallMainKeyHeight = max\(/);
   assert.match(c, /Spacer\(minLength: keyboardTopGap\)/);
@@ -74,14 +75,12 @@ test('Home do Watch pequeno é compacta e não empurra a engrenagem para fora', 
 
 test('Series 11 42mm usa layout inferior ancorado sem alterar o Ultra', () => {
   const c = read('ios/App/Por Sete Watch App/ContentView.swift');
-  assert.match(c, /let keyboardBottomInset: CGFloat = smallWatch \? 4 : 0/);
-  assert.match(c, /let keyboardTopGap: CGFloat = smallWatch \? 4 : rowGap/);
+  assert.match(c, /let keyboardBottomInset: CGFloat = anchoredWatch \? 4 : 0/);
+  assert.match(c, /let keyboardTopGap: CGFloat = anchoredWatch \? 4 : rowGap/);
   assert.match(c, /let headerLift: CGFloat = smallWatch \? -13 : -9/);
   assert.match(c, /let stackLift: CGFloat = smallWatch \? 0 : -6/);
-  assert.match(
-    c,
-    /edges: WKInterfaceDevice\.current\(\)\.screenBounds\.width < 195 \? \.bottom : \[\]/,
-  );
+  assert.match(c, /width < 195 \|\| width >= 205/);
+  assert.match(c, /\? \.bottom : \[\]/);
 });
 
 test('Ultra preserva a geometria grande aprovada', () => {
@@ -106,10 +105,35 @@ test('Watch não usa atribuições imperativas dentro do ViewBuilder', () => {
   assert.match(c, /let enterKeyHeight = smallWatch \? smallEnterKeyHeight : regularEnterKeyHeight/);
 });
 
-test('Watch pequeno ignora somente a safe area inferior do jogo', () => {
+test('Series 11 e Ultra ignoram somente a safe area inferior do jogo', () => {
   const c = read('ios/App/Por Sete Watch App/ContentView.swift');
   assert.match(c, /\.ignoresSafeArea\(\s*\.container,/);
+  assert.match(c, /width < 195 \|\| width >= 205/);
   assert.match(c, /\? \.bottom : \[\]/);
   assert.doesNotMatch(c, /edges:.*\.top/);
   assert.doesNotMatch(c, /edges:.*\.all/);
+});
+
+test('Ultra usa o mesmo ancoramento inferior do Series 11 sem reduzir suas teclas', () => {
+  const c = read('ios/App/Por Sete Watch App/ContentView.swift');
+  assert.match(c, /let anchoredWatch = smallWatch \|\| ultraWatch/);
+  assert.match(c, /if anchoredWatch \{\s*Spacer\(minLength: keyboardTopGap\)/);
+  assert.match(c, /min\(ultraWatch \? 40 : 36,/);
+
+  const width = 205;
+  const height = 251;
+  const rowGap = 2;
+  const headerHeight = 34;
+  const answerHeight = 22;
+  const totalGaps = rowGap * 6;
+  const regularAvailableKeys = height - headerHeight - answerHeight - totalGaps;
+  const regularRawMainKeyHeight = (regularAvailableKeys - 28) / 4;
+  const mainKeyHeight = Math.max(27, Math.min(35, regularRawMainKeyHeight));
+  const enterKeyHeight = Math.max(
+    24,
+    Math.min(40, regularAvailableKeys - mainKeyHeight * 4),
+  );
+
+  assert.equal(mainKeyHeight, 35);
+  assert.equal(enterKeyHeight, 40);
 });

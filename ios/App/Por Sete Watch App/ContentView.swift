@@ -276,6 +276,7 @@ struct ContentView: View {
 
             let smallWatch = deviceWidth < 195
             let ultraWatch = deviceWidth >= 205
+            let anchoredWatch = smallWatch || ultraWatch
             let compactWatch = height < 205
 
             let headerHeight: CGFloat = smallWatch ? 26 : (compactWatch ? 30 : 34)
@@ -289,8 +290,8 @@ struct ContentView: View {
             // Small Watches are split into a compact top zone and a keyboard
             // zone anchored to the bottom. This removes the dead space that was
             // visible below the Enter key on Series 11 42mm.
-            let keyboardBottomInset: CGFloat = smallWatch ? 4 : 0
-            let keyboardTopGap: CGFloat = smallWatch ? 4 : rowGap
+            let keyboardBottomInset: CGFloat = anchoredWatch ? 4 : 0
+            let keyboardTopGap: CGFloat = anchoredWatch ? 4 : rowGap
             let keyboardAvailableHeight = max(
                 0,
                 height - headerHeight - answerHeight - keyboardTopGap - keyboardBottomInset
@@ -377,7 +378,7 @@ struct ContentView: View {
                     .background(.black.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
 
-                if smallWatch {
+                if anchoredWatch {
                     Spacer(minLength: keyboardTopGap)
                 }
 
@@ -442,13 +443,16 @@ struct ContentView: View {
             .offset(y: stackLift)
             .frame(maxHeight: .infinity, alignment: .top)
         }
-        // Series 11 42mm leaves a substantial bottom safe-area that was not
-        // available to GeometryReader. Reclaim only that bottom edge on small
-        // Watches; the top safe-area (system clock) remains protected and the
-        // regular/Ultra layouts remain unchanged.
+        // Series 11 42mm and Ultra can leave visible room below the keyboard
+        // because that lower region is outside GeometryReader's safe area.
+        // Reclaim only the bottom edge on the two layouts that use bottom
+        // anchoring. The top safe-area (system clock) remains protected.
         .ignoresSafeArea(
             .container,
-            edges: WKInterfaceDevice.current().screenBounds.width < 195 ? .bottom : []
+            edges: {
+                let width = WKInterfaceDevice.current().screenBounds.width
+                return (width < 195 || width >= 205) ? .bottom : []
+            }()
         )
         .alert(item: $game.mistake) { mistake in
             Alert(
