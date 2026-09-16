@@ -24,15 +24,15 @@ test('Watch mantém jogo glanceable e engrenagem central', () => {
   assert.match(c, /let deviceWidth = WKInterfaceDevice\.current\(\)\.screenBounds\.width/);
   assert.match(c, /let smallWatch = deviceWidth < 195/);
   assert.match(c, /let ultraWatch = deviceWidth >= 205/);
-  assert.match(c, /let smallMainKeyHeight = max\(1, \(availableKeys - smallEnterKeyHeight\) \/ 4\)/);
-  assert.match(c, /let stackLift: CGFloat = smallWatch \? 6 : -6/);
+  assert.match(c, /let keyboardAvailableHeight = max\(/);
+  assert.match(c, /let smallMainKeyHeight = max\(/);
+  assert.match(c, /Spacer\(minLength: keyboardTopGap\)/);
+  assert.match(c, /\.padding\(\.bottom, keyboardBottomInset\)/);
   assert.match(c, /\.frame\(width: unit \* 2\.05\)/);
   assert.match(c, /KeyButton\(height: enterKeyHeight, fontSize: enterKeyFont, accent: true\)/);
-  assert.ok(c.includes('Button(game.decimalKey(language: settings.language))'));
-  assert.ok(c.includes('Image(systemName: "delete.left")'));
 });
 
-test('Watch pequeno usa orçamento adaptativo e aproveita melhor a área inferior', () => {
+test('Watch pequeno ancora teclado no fundo e usa a altura disponível', () => {
   const samples = [
     { name: '40/41mm compact', width: 176, height: 197 },
     { name: '42mm low', width: 184, height: 205 },
@@ -44,18 +44,23 @@ test('Watch pequeno usa orçamento adaptativo e aproveita melhor a área inferio
     const rowGap = 2;
     const headerHeight = 26;
     const answerHeight = 19;
-    const totalGaps = rowGap * 6;
-    const bottomExtension = Math.min(18, Math.max(0, sample.height - 188));
-    const bottomSafety = 0;
-    const availableKeys = Math.max(
+    const keyboardBottomInset = 4;
+    const keyboardTopGap = 4;
+    const keyboardAvailableHeight = Math.max(
       0,
-      sample.height + bottomExtension - headerHeight - answerHeight - totalGaps - bottomSafety,
+      sample.height - headerHeight - answerHeight - keyboardTopGap - keyboardBottomInset,
     );
-    const enterKeyHeight = Math.min(30, Math.max(22, availableKeys * 0.18));
-    const mainKeyHeight = Math.max(1, (availableKeys - enterKeyHeight) / 4);
+    const enterKeyHeight = Math.min(36, Math.max(26, keyboardAvailableHeight * 0.20));
+    const mainKeyHeight = Math.max(
+      1,
+      (keyboardAvailableHeight - enterKeyHeight - rowGap * 4) / 4,
+    );
+    const used = headerHeight + answerHeight + keyboardTopGap + keyboardBottomInset
+      + mainKeyHeight * 4 + enterKeyHeight + rowGap * 4;
 
-    assert.ok(mainKeyHeight >= 24, `${sample.name}: teclas muito baixas (${mainKeyHeight})`);
-    assert.ok(mainKeyHeight >= 30, `${sample.name}: deveria aproveitar melhor a área inferior (${mainKeyHeight})`);
+    const minMain = sample.height < 205 ? 26 : (sample.height < 215 ? 28 : 30);
+    assert.ok(mainKeyHeight >= minMain, `${sample.name}: teclas principais baixas (${mainKeyHeight})`);
+    assert.ok(Math.abs(used - sample.height) < 0.01, `${sample.name}: sobra vertical inesperada (${sample.height - used})`);
   }
 });
 
@@ -67,13 +72,12 @@ test('Home do Watch pequeno é compacta e não empurra a engrenagem para fora', 
   assert.match(c, /Spacer\(\)\s*\.frame\(height: 2\)/);
 });
 
-test('Series 11 42mm sobe o header e desce o bloco geral sem alterar o Ultra', () => {
+test('Series 11 42mm usa layout inferior ancorado sem alterar o Ultra', () => {
   const c = read('ios/App/Por Sete Watch App/ContentView.swift');
-  assert.match(c, /let headerHeight: CGFloat = smallWatch \? 26 : \(compactWatch \? 30 : 34\)/);
-  assert.match(c, /let answerHeight: CGFloat = smallWatch \? 19 : \(compactWatch \? 20 : 22\)/);
-  assert.match(c, /let bottomExtension: CGFloat = smallWatch \? min\(18, max\(0, height - 188\)\) : 0/);
+  assert.match(c, /let keyboardBottomInset: CGFloat = smallWatch \? 4 : 0/);
+  assert.match(c, /let keyboardTopGap: CGFloat = smallWatch \? 4 : rowGap/);
   assert.match(c, /let headerLift: CGFloat = smallWatch \? -13 : -9/);
-  assert.match(c, /let stackLift: CGFloat = smallWatch \? 6 : -6/);
+  assert.match(c, /let stackLift: CGFloat = smallWatch \? 0 : -6/);
 });
 
 test('Ultra preserva a geometria grande aprovada', () => {

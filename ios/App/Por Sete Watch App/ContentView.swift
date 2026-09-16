@@ -274,11 +274,6 @@ struct ContentView: View {
             let unit = (width - columnGap * 2) / 3
             let deviceWidth = WKInterfaceDevice.current().screenBounds.width
 
-            // Size detection uses the physical Watch screen width, while the
-            // vertical budget uses the actual GeometryReader height. This avoids
-            // relying on a breakpoint that can vary with watchOS safe-area math.
-            // On small Watches every row is derived from the available budget,
-            // so hard minimums can never force the Enter key below the screen.
             let smallWatch = deviceWidth < 195
             let ultraWatch = deviceWidth >= 205
             let compactWatch = height < 205
@@ -290,34 +285,45 @@ struct ContentView: View {
             let sideFont: CGFloat = smallWatch ? 8.5 : (compactWatch ? 8.5 : 9.5)
             let answerHeight: CGFloat = smallWatch ? 19 : (compactWatch ? 20 : 22)
             let answerFont: CGFloat = smallWatch ? 20 : (compactWatch ? 21 : 23)
-            let totalGaps = rowGap * 6
-            let bottomExtension: CGFloat = smallWatch ? min(18, max(0, height - 188)) : 0
-            let bottomSafety: CGFloat = 0
-            let availableKeys = max(
+
+            // Small Watches are split into a compact top zone and a keyboard
+            // zone anchored to the bottom. This removes the dead space that was
+            // visible below the Enter key on Series 11 42mm.
+            let keyboardBottomInset: CGFloat = smallWatch ? 4 : 0
+            let keyboardTopGap: CGFloat = smallWatch ? 4 : rowGap
+            let keyboardAvailableHeight = max(
                 0,
-                height + bottomExtension - headerHeight - answerHeight - totalGaps - bottomSafety
+                height - headerHeight - answerHeight - keyboardTopGap - keyboardBottomInset
             )
 
-            // Keep all layout calculations as expressions. GeometryReader's
-            // content closure is a ViewBuilder; imperative assignment branches
-            // would be interpreted as Views and produce Type '()' errors.
-            let smallEnterKeyHeight = min(30, max(22, availableKeys * 0.18))
-            let smallMainKeyHeight = max(1, (availableKeys - smallEnterKeyHeight) / 4)
-            let regularRawMainKeyHeight = (availableKeys - 28) / 4
+            // Five keyboard rows: four equal main rows and one Enter row.
+            let smallEnterKeyHeight = min(36, max(26, keyboardAvailableHeight * 0.20))
+            let smallMainKeyHeight = max(
+                1,
+                (keyboardAvailableHeight - smallEnterKeyHeight - rowGap * 4) / 4
+            )
+
+            // Preserve the approved geometry on regular and Ultra Watches.
+            let totalGaps = rowGap * 6
+            let regularAvailableKeys = max(
+                0,
+                height - headerHeight - answerHeight - totalGaps
+            )
+            let regularRawMainKeyHeight = (regularAvailableKeys - 28) / 4
             let regularMainKeyHeight = max(27, min(35, regularRawMainKeyHeight))
             let regularEnterKeyHeight = max(
                 24,
-                min(ultraWatch ? 40 : 36, availableKeys - regularMainKeyHeight * 4)
+                min(ultraWatch ? 40 : 36, regularAvailableKeys - regularMainKeyHeight * 4)
             )
+
             let mainKeyHeight = smallWatch ? smallMainKeyHeight : regularMainKeyHeight
             let enterKeyHeight = smallWatch ? smallEnterKeyHeight : regularEnterKeyHeight
-
-            let keyFont = max(16, min(20, mainKeyHeight * 0.56))
-            let enterKeyFont = max(15, min(19, enterKeyHeight * 0.56))
+            let keyFont = max(17, min(21, mainKeyHeight * 0.56))
+            let enterKeyFont = max(16, min(20, enterKeyHeight * 0.56))
             let headerLift: CGFloat = smallWatch ? -13 : -9
-            let stackLift: CGFloat = smallWatch ? 6 : -6
+            let stackLift: CGFloat = smallWatch ? 0 : -6
 
-            VStack(spacing: rowGap) {
+            VStack(spacing: smallWatch ? 0 : rowGap) {
                 HStack(alignment: .top, spacing: 2) {
                     VStack(alignment: .leading, spacing: 1) {
                         Text("\(settings.text("phase")) \(game.phase)")
@@ -371,59 +377,66 @@ struct ContentView: View {
                     .background(.black.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
 
-                ForEach([["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"]], id: \.self) { row in
-                    HStack(spacing: columnGap) {
-                        ForEach(row, id: \.self) { value in
-                            Button(value) {
-                                game.appendDigit(value)
+                if smallWatch {
+                    Spacer(minLength: keyboardTopGap)
+                }
+
+                VStack(spacing: rowGap) {
+                    ForEach([["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"]], id: \.self) { row in
+                        HStack(spacing: columnGap) {
+                            ForEach(row, id: \.self) { value in
+                                Button(value) {
+                                    game.appendDigit(value)
+                                }
+                                .buttonStyle(KeyButton(height: mainKeyHeight, fontSize: keyFont))
                             }
-                            .buttonStyle(KeyButton(height: mainKeyHeight, fontSize: keyFont))
                         }
+                        .frame(height: mainKeyHeight)
+                    }
+
+                    HStack(spacing: columnGap) {
+                        Button(game.decimalKey(language: settings.language)) {
+                            game.appendDigit("decimal")
+                        }
+                        .buttonStyle(KeyButton(height: mainKeyHeight, fontSize: keyFont))
+                        .frame(width: unit)
+                        .accessibilityLabel(settings.text("decimalSeparator"))
+
+                        Button("0") {
+                            game.appendDigit("0")
+                        }
+                        .buttonStyle(KeyButton(height: mainKeyHeight, fontSize: keyFont))
+                        .frame(width: unit)
+
+                        Button {
+                            game.backspace()
+                        } label: {
+                            Image(systemName: "delete.left")
+                        }
+                        .buttonStyle(KeyButton(height: mainKeyHeight, fontSize: keyFont))
+                        .frame(width: unit)
+                        .accessibilityLabel(settings.text("delete"))
                     }
                     .frame(height: mainKeyHeight)
+
+                    HStack(spacing: columnGap) {
+                        Spacer(minLength: 0)
+
+                        Button {
+                            submitAnswer()
+                        } label: {
+                            Image(systemName: "return")
+                                .font(.system(size: max(16, enterKeyFont), weight: .black))
+                        }
+                        .buttonStyle(KeyButton(height: enterKeyHeight, fontSize: enterKeyFont, accent: true))
+                        .frame(width: unit * 2.05)
+                        .accessibilityLabel(settings.text("submit"))
+
+                        Spacer(minLength: 0)
+                    }
+                    .frame(height: enterKeyHeight)
                 }
-
-                HStack(spacing: columnGap) {
-                    Button(game.decimalKey(language: settings.language)) {
-                        game.appendDigit("decimal")
-                    }
-                    .buttonStyle(KeyButton(height: mainKeyHeight, fontSize: keyFont))
-                    .frame(width: unit)
-                    .accessibilityLabel(settings.text("decimalSeparator"))
-
-                    Button("0") {
-                        game.appendDigit("0")
-                    }
-                    .buttonStyle(KeyButton(height: mainKeyHeight, fontSize: keyFont))
-                    .frame(width: unit)
-
-                    Button {
-                        game.backspace()
-                    } label: {
-                        Image(systemName: "delete.left")
-                    }
-                    .buttonStyle(KeyButton(height: mainKeyHeight, fontSize: keyFont))
-                    .frame(width: unit)
-                    .accessibilityLabel(settings.text("delete"))
-                }
-                .frame(height: mainKeyHeight)
-
-                HStack(spacing: columnGap) {
-                    Spacer(minLength: 0)
-
-                    Button {
-                        submitAnswer()
-                    } label: {
-                        Image(systemName: "return")
-                            .font(.system(size: max(16, enterKeyFont), weight: .black))
-                    }
-                    .buttonStyle(KeyButton(height: enterKeyHeight, fontSize: enterKeyFont, accent: true))
-                    .frame(width: unit * 2.05)
-                    .accessibilityLabel(settings.text("submit"))
-
-                    Spacer(minLength: 0)
-                }
-                .frame(height: enterKeyHeight)
+                .padding(.bottom, keyboardBottomInset)
             }
             .padding(.horizontal, 2)
             .offset(y: stackLift)
