@@ -24,7 +24,7 @@ test('Watch mantém jogo glanceable e engrenagem central', () => {
   assert.match(c, /\.frame\(maxWidth: \.infinity, alignment: \.center\)/);
   assert.match(c, /let rawKeyHeight = \(height - reserved\) \/ 4/);
   assert.match(c, /HStack\(alignment: \.top, spacing: 2\)/);
-  assert.match(c, /let numberFont: CGFloat = compactWatch \? 34 : \(height < 235 \? 38 : 41\)/);
+  assert.match(c, /let numberFont: CGFloat = compactWatch \? 38 : \(height < 235 \? 42 : 45\)/);
   assert.match(c, /Text\("✓\\\(game\.correctInPhase\)\/10"\)/);
   assert.match(c, /Text\("✕\\\(game\.errors\)\/3"\)/);
   assert.match(c, /\.frame\(width: unit \* 0\.68\)/);

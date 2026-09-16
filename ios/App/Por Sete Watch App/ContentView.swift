@@ -225,7 +225,7 @@ struct ContentView: View {
 
     private var gameView: some View {
         GeometryReader { geometry in
-            let rowGap: CGFloat = 3
+            let rowGap: CGFloat = 2
             let columnGap: CGFloat = 4
             let width = geometry.size.width
             let height = geometry.size.height
@@ -237,15 +237,15 @@ struct ContentView: View {
             // top baseline. This recovers the visual gap without violating the
             // status-bar safe area and lets the main number be more prominent.
             let compactWatch = height < 205
-            let headerHeight: CGFloat = compactWatch ? 48 : 52
-            let sideWidth: CGFloat = compactWatch ? 43 : 47
-            let numberFont: CGFloat = compactWatch ? 34 : (height < 235 ? 38 : 41)
+            let headerHeight: CGFloat = compactWatch ? 40 : 44
+            let sideWidth: CGFloat = compactWatch ? 38 : 42
+            let numberFont: CGFloat = compactWatch ? 38 : (height < 235 ? 42 : 45)
             let divisionFont: CGFloat = compactWatch ? 13 : 15
-            let sideFont: CGFloat = compactWatch ? 9.5 : 10
-            let answerHeight: CGFloat = compactWatch ? 22 : 24
+            let sideFont: CGFloat = compactWatch ? 9 : 9.5
+            let answerHeight: CGFloat = compactWatch ? 18 : 20
             let reserved = headerHeight + answerHeight + rowGap * 2 + columnGap * 3
             let rawKeyHeight = (height - reserved) / 4
-            let keyHeight = max(24, min(34, rawKeyHeight))
+            let keyHeight = max(24, min(33, rawKeyHeight))
             let keyFont = max(16, min(19, keyHeight * 0.58))
 
             VStack(spacing: rowGap) {
@@ -265,6 +265,7 @@ struct ContentView: View {
                     .font(.system(size: sideFont, weight: .semibold, design: .rounded))
                     .foregroundStyle(PorSetePalette.secondaryText)
                     .frame(width: sideWidth, height: headerHeight, alignment: .topLeading)
+                    .offset(y: -1)
 
                     VStack(spacing: -5) {
                         Text("\(game.number)")
@@ -277,6 +278,7 @@ struct ContentView: View {
                             .foregroundStyle(PorSetePalette.secondaryText)
                     }
                     .frame(maxWidth: .infinity, maxHeight: headerHeight, alignment: .top)
+                    .offset(y: -1)
 
                     VStack(alignment: .trailing, spacing: 1) {
                         Text("✓\(game.correctInPhase)/10")
@@ -286,17 +288,18 @@ struct ContentView: View {
                     .foregroundStyle(PorSetePalette.secondaryText)
                     .monospacedDigit()
                     .frame(width: sideWidth, height: headerHeight, alignment: .topTrailing)
+                    .offset(y: -1)
                 }
                 .frame(height: headerHeight, alignment: .top)
 
                 let displayed = game.displayedInput(language: settings.language)
-                Text(displayed.isEmpty ? "—" : displayed)
+                Text(displayed.isEmpty ? " " : displayed)
                     .font(.system(size: height < 205 ? 18 : 20, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .lineLimit(1)
                     .minimumScaleFactor(0.55)
                     .frame(maxWidth: .infinity, minHeight: answerHeight, maxHeight: answerHeight)
-                    .background(.black.opacity(0.18))
+                    .background(.black.opacity(0.16))
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
                 ForEach([["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"]], id: \.self) { row in
@@ -347,6 +350,7 @@ struct ContentView: View {
                 .frame(height: keyHeight)
             }
             .padding(.horizontal, 2)
+            .offset(y: -2)
             .frame(maxHeight: .infinity, alignment: .top)
         }
         .alert(item: $game.mistake) { mistake in
