@@ -284,8 +284,8 @@ struct ContentView: View {
             let numberFont: CGFloat = smallWatch ? 42 : (compactWatch ? 42 : (height < 235 ? 46 : 49))
             let divisionFont: CGFloat = smallWatch ? 11 : (compactWatch ? 11 : 13)
             let sideFont: CGFloat = smallWatch ? 8.5 : (compactWatch ? 8.5 : 9.5)
-            let answerHeight: CGFloat = smallWatch ? 19 : (ultraWatch ? 32 : (compactWatch ? 20 : 22))
-            let answerFont: CGFloat = smallWatch ? 20 : (ultraWatch ? 30 : (compactWatch ? 21 : 23))
+            let answerHeight: CGFloat = smallWatch ? 23 : (ultraWatch ? 32 : (compactWatch ? 20 : 22))
+            let answerFont: CGFloat = smallWatch ? 24 : (ultraWatch ? 30 : (compactWatch ? 21 : 23))
 
             // Series 11 and Ultra use a true bottom-anchored vertical budget.
             // Ultra gets a larger answer strip and a larger bottom inset so the

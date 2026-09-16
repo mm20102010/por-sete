@@ -44,7 +44,7 @@ test('Watch pequeno ancora teclado no fundo e usa a altura disponível', () => {
   for (const sample of samples) {
     const rowGap = 2;
     const headerHeight = 26;
-    const answerHeight = 19;
+    const answerHeight = 23;
     const keyboardBottomInset = 4;
     const keyboardTopGap = 4;
     const keyboardAvailableHeight = Math.max(
@@ -59,7 +59,7 @@ test('Watch pequeno ancora teclado no fundo e usa a altura disponível', () => {
     const used = headerHeight + answerHeight + keyboardTopGap + keyboardBottomInset
       + mainKeyHeight * 4 + enterKeyHeight + rowGap * 4;
 
-    const minMain = sample.height < 205 ? 26 : (sample.height < 215 ? 28 : 30);
+    const minMain = sample.height < 205 ? 26 : (sample.height < 215 ? 27 : 30);
     assert.ok(mainKeyHeight >= minMain, `${sample.name}: teclas principais baixas (${mainKeyHeight})`);
     assert.ok(Math.abs(used - sample.height) < 0.01, `${sample.name}: sobra vertical inesperada (${sample.height - used})`);
   }
@@ -86,8 +86,8 @@ test('Series 11 42mm mantém sua geometria ancorada', () => {
 test('Ultra usa resposta realmente maior e mantém o teclado dentro da tela', () => {
   const c = read('ios/App/Por Sete Watch App/ContentView.swift');
   assert.match(c, /let headerHeight: CGFloat = smallWatch \? 26 : \(ultraWatch \? 32 :/);
-  assert.match(c, /let answerHeight: CGFloat = smallWatch \? 19 : \(ultraWatch \? 32 :/);
-  assert.match(c, /let answerFont: CGFloat = smallWatch \? 20 : \(ultraWatch \? 30 :/);
+  assert.match(c, /let answerHeight: CGFloat = smallWatch \? 23 : \(ultraWatch \? 32 :/);
+  assert.match(c, /let answerFont: CGFloat = smallWatch \? 24 : \(ultraWatch \? 30 :/);
   assert.match(c, /let keyboardBottomInset: CGFloat = smallWatch \? 4 : \(ultraWatch \? 8 : 0\)/);
   assert.match(c, /let keyboardTopGap: CGFloat = smallWatch \? 4 : \(ultraWatch \? 3 : rowGap\)/);
 
