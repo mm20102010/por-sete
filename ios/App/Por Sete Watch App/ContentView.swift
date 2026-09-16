@@ -12,11 +12,13 @@ private enum PorSetePalette {
 }
 
 private struct PrimaryButton: ButtonStyle {
+    var minHeight: CGFloat = 42
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.headline)
             .foregroundStyle(.white)
-            .frame(maxWidth: .infinity, minHeight: 42)
+            .frame(maxWidth: .infinity, minHeight: minHeight)
             .background(
                 LinearGradient(
                     colors: [PorSetePalette.buttonTop, PorSetePalette.buttonBottom],
@@ -113,41 +115,81 @@ struct ContentView: View {
         }
     }
 
+    @ViewBuilder
     private var homeView: some View {
-        VStack(spacing: 10) {
-            Spacer(minLength: 4)
+        let smallWatch = WKInterfaceDevice.current().screenBounds.width < 195
 
-            Text("/7")
-                .font(.system(size: 46, weight: .black, design: .rounded))
-                .foregroundStyle(.white)
-                .shadow(color: PorSetePalette.secondaryText.opacity(0.25), radius: 10)
+        if smallWatch {
+            VStack(spacing: 6) {
+                Text("/7")
+                    .font(.system(size: 40, weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+                    .shadow(color: PorSetePalette.secondaryText.opacity(0.25), radius: 8)
 
-            Text("Por Sete")
-                .font(.headline)
-                .foregroundStyle(PorSetePalette.secondaryText)
+                Text("Por Sete")
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .foregroundStyle(PorSetePalette.secondaryText)
 
-            Button(settings.text("start")) {
-                startGame()
+                Button(settings.text("start")) {
+                    startGame()
+                }
+                .buttonStyle(PrimaryButton(minHeight: 36))
+                .padding(.horizontal, 10)
+
+                Spacer()
+                    .frame(height: 2)
+
+                Button {
+                    shell = .settings
+                } label: {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 17, weight: .semibold))
+                        .frame(width: 38, height: 38)
+                        .background(.white.opacity(0.07))
+                        .clipShape(Circle())
+                        .accessibilityLabel(settings.text("settings"))
+                }
+                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity, alignment: .center)
             }
-            .buttonStyle(PrimaryButton())
-            .padding(.horizontal, 8)
+            .padding(.vertical, 2)
+            .frame(maxHeight: .infinity, alignment: .center)
+        } else {
+            VStack(spacing: 10) {
+                Spacer(minLength: 4)
 
-            Spacer()
+                Text("/7")
+                    .font(.system(size: 46, weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+                    .shadow(color: PorSetePalette.secondaryText.opacity(0.25), radius: 10)
 
-            Button {
-                shell = .settings
-            } label: {
-                Image(systemName: "gearshape")
-                    .font(.system(size: 18, weight: .semibold))
-                    .frame(width: 44, height: 44)
-                    .background(.white.opacity(0.07))
-                    .clipShape(Circle())
-                    .accessibilityLabel(settings.text("settings"))
+                Text("Por Sete")
+                    .font(.headline)
+                    .foregroundStyle(PorSetePalette.secondaryText)
+
+                Button(settings.text("start")) {
+                    startGame()
+                }
+                .buttonStyle(PrimaryButton())
+                .padding(.horizontal, 8)
+
+                Spacer()
+
+                Button {
+                    shell = .settings
+                } label: {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 18, weight: .semibold))
+                        .frame(width: 44, height: 44)
+                        .background(.white.opacity(0.07))
+                        .clipShape(Circle())
+                        .accessibilityLabel(settings.text("settings"))
+                }
+                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity, alignment: .center)
             }
-            .buttonStyle(.plain)
-            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.vertical, 4)
         }
-        .padding(.vertical, 4)
     }
 
     private var settingsView: some View {
@@ -240,6 +282,7 @@ struct ContentView: View {
             let smallWatch = deviceWidth < 195
             let ultraWatch = deviceWidth >= 205
             let compactWatch = height < 205
+            let roomySmallWatch = smallWatch && height >= 215
 
             let headerHeight: CGFloat = smallWatch ? 28 : (compactWatch ? 30 : 34)
             let sideWidth: CGFloat = smallWatch ? 34 : (compactWatch ? 34 : 38)
@@ -249,13 +292,17 @@ struct ContentView: View {
             let answerHeight: CGFloat = smallWatch ? 20 : (compactWatch ? 20 : 22)
             let answerFont: CGFloat = smallWatch ? 21 : (compactWatch ? 21 : 23)
             let totalGaps = rowGap * 6
-            let bottomSafety: CGFloat = smallWatch ? 4 : 0
-            let availableKeys = max(0, height - headerHeight - answerHeight - totalGaps - bottomSafety)
+            let bottomExtension: CGFloat = roomySmallWatch ? min(14, max(0, height - 205)) : 0
+            let bottomSafety: CGFloat = smallWatch && !roomySmallWatch ? 4 : 0
+            let availableKeys = max(
+                0,
+                height + bottomExtension - headerHeight - answerHeight - totalGaps - bottomSafety
+            )
 
             // Keep all layout calculations as expressions. GeometryReader's
             // content closure is a ViewBuilder; imperative assignment branches
             // would be interpreted as Views and produce Type '()' errors.
-            let smallEnterKeyHeight = min(28, max(20, availableKeys * 0.17))
+            let smallEnterKeyHeight = min(roomySmallWatch ? 30 : 28, max(20, availableKeys * 0.17))
             let smallMainKeyHeight = max(1, (availableKeys - smallEnterKeyHeight) / 4)
             let regularRawMainKeyHeight = (availableKeys - 28) / 4
             let regularMainKeyHeight = max(27, min(35, regularRawMainKeyHeight))
@@ -268,8 +315,8 @@ struct ContentView: View {
 
             let keyFont = max(16, min(20, mainKeyHeight * 0.56))
             let enterKeyFont = max(15, min(19, enterKeyHeight * 0.56))
-            let headerLift: CGFloat = smallWatch ? -11 : -9
-            let stackLift: CGFloat = smallWatch ? -8 : -6
+            let headerLift: CGFloat = roomySmallWatch ? -13 : (smallWatch ? -11 : -9)
+            let stackLift: CGFloat = roomySmallWatch ? 2 : (smallWatch ? -4 : -6)
 
             VStack(spacing: rowGap) {
                 HStack(alignment: .top, spacing: 2) {
