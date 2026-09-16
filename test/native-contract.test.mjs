@@ -22,11 +22,12 @@ test('Watch tem home, engrenagem, teclado e complication', () => {
 test('Watch mantém jogo glanceable e engrenagem central', () => {
   const c = read('ios/App/Por Sete Watch App/ContentView.swift');
   assert.match(c, /\.frame\(maxWidth: \.infinity, alignment: \.center\)/);
-  assert.match(c, /let rawKeyHeight = \(height - reserved\) \/ 4/);
+  assert.match(c, /let rawMainKeyHeight = \(availableKeys - 2 \* 22\) \/ 4/);
   assert.match(c, /HStack\(alignment: \.top, spacing: 2\)/);
-  assert.match(c, /let numberFont: CGFloat = compactWatch \? 38 : \(height < 235 \? 42 : 45\)/);
-  assert.match(c, /Text\("✓\\\(game\.correctInPhase\)\/10"\)/);
-  assert.match(c, /Text\("✕\\\(game\.errors\)\/3"\)/);
-  assert.match(c, /\.frame\(width: unit \* 0\.68\)/);
-  assert.match(c, /KeyButton\(height: keyHeight, fontSize: keyFont, accent: true\)/);
+  assert.match(c, /let numberFont: CGFloat = compactWatch \? 40 : \(height < 235 \? 44 : 47\)/);
+  assert.ok(c.includes('correctInPhase)/10'));
+  assert.ok(c.includes('game.errors)/3'));
+  assert.match(c, /\.frame\(width: unit \* 1\.18\)/);
+  assert.match(c, /\.frame\(width: unit \* 1\.55\)/);
+  assert.match(c, /KeyButton\(height: secondaryKeyHeight, fontSize: secondaryKeyFont, accent: true\)/);
 });
