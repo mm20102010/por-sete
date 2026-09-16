@@ -282,18 +282,17 @@ struct ContentView: View {
             let smallWatch = deviceWidth < 195
             let ultraWatch = deviceWidth >= 205
             let compactWatch = height < 205
-            let roomySmallWatch = smallWatch && height >= 215
 
-            let headerHeight: CGFloat = smallWatch ? 28 : (compactWatch ? 30 : 34)
+            let headerHeight: CGFloat = smallWatch ? 26 : (compactWatch ? 30 : 34)
             let sideWidth: CGFloat = smallWatch ? 34 : (compactWatch ? 34 : 38)
             let numberFont: CGFloat = smallWatch ? 42 : (compactWatch ? 42 : (height < 235 ? 46 : 49))
             let divisionFont: CGFloat = smallWatch ? 11 : (compactWatch ? 11 : 13)
             let sideFont: CGFloat = smallWatch ? 8.5 : (compactWatch ? 8.5 : 9.5)
-            let answerHeight: CGFloat = smallWatch ? 20 : (compactWatch ? 20 : 22)
-            let answerFont: CGFloat = smallWatch ? 21 : (compactWatch ? 21 : 23)
+            let answerHeight: CGFloat = smallWatch ? 19 : (compactWatch ? 20 : 22)
+            let answerFont: CGFloat = smallWatch ? 20 : (compactWatch ? 21 : 23)
             let totalGaps = rowGap * 6
-            let bottomExtension: CGFloat = roomySmallWatch ? min(14, max(0, height - 205)) : 0
-            let bottomSafety: CGFloat = smallWatch && !roomySmallWatch ? 4 : 0
+            let bottomExtension: CGFloat = smallWatch ? min(18, max(0, height - 188)) : 0
+            let bottomSafety: CGFloat = 0
             let availableKeys = max(
                 0,
                 height + bottomExtension - headerHeight - answerHeight - totalGaps - bottomSafety
@@ -302,7 +301,7 @@ struct ContentView: View {
             // Keep all layout calculations as expressions. GeometryReader's
             // content closure is a ViewBuilder; imperative assignment branches
             // would be interpreted as Views and produce Type '()' errors.
-            let smallEnterKeyHeight = min(roomySmallWatch ? 30 : 28, max(20, availableKeys * 0.17))
+            let smallEnterKeyHeight = min(30, max(22, availableKeys * 0.18))
             let smallMainKeyHeight = max(1, (availableKeys - smallEnterKeyHeight) / 4)
             let regularRawMainKeyHeight = (availableKeys - 28) / 4
             let regularMainKeyHeight = max(27, min(35, regularRawMainKeyHeight))
@@ -315,8 +314,8 @@ struct ContentView: View {
 
             let keyFont = max(16, min(20, mainKeyHeight * 0.56))
             let enterKeyFont = max(15, min(19, enterKeyHeight * 0.56))
-            let headerLift: CGFloat = roomySmallWatch ? -13 : (smallWatch ? -11 : -9)
-            let stackLift: CGFloat = roomySmallWatch ? 2 : (smallWatch ? -4 : -6)
+            let headerLift: CGFloat = smallWatch ? -13 : -9
+            let stackLift: CGFloat = smallWatch ? 6 : -6
 
             VStack(spacing: rowGap) {
                 HStack(alignment: .top, spacing: 2) {

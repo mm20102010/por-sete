@@ -60,7 +60,6 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B27100000000000000000009"
             BuildableName = "Por Sete Watch App.app"
-            BlueprintName = "Por Sete Watch App"
             ReferencedContainer = "container:App.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -77,10 +76,17 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B27100000000000000000009"
             BuildableName = "Por Sete Watch App.app"
-            BlueprintName = "Por Sete Watch App"
             ReferencedContainer = "container:App.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "B27100000000000000000009"
+            BuildableName = "Por Sete Watch App.app"
+            ReferencedContainer = "container:App.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

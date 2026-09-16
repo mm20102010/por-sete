@@ -25,14 +25,14 @@ test('Watch mantém jogo glanceable e engrenagem central', () => {
   assert.match(c, /let smallWatch = deviceWidth < 195/);
   assert.match(c, /let ultraWatch = deviceWidth >= 205/);
   assert.match(c, /let smallMainKeyHeight = max\(1, \(availableKeys - smallEnterKeyHeight\) \/ 4\)/);
-  assert.match(c, /let stackLift: CGFloat = roomySmallWatch \? 2 : \(smallWatch \? -4 : -6\)/);
+  assert.match(c, /let stackLift: CGFloat = smallWatch \? 6 : -6/);
   assert.match(c, /\.frame\(width: unit \* 2\.05\)/);
   assert.match(c, /KeyButton\(height: enterKeyHeight, fontSize: enterKeyFont, accent: true\)/);
   assert.ok(c.includes('Button(game.decimalKey(language: settings.language))'));
   assert.ok(c.includes('Image(systemName: "delete.left")'));
 });
 
-test('Watch pequeno usa orçamento adaptativo sem comprimir o Series 11 42mm', () => {
+test('Watch pequeno usa orçamento adaptativo e aproveita melhor a área inferior', () => {
   const samples = [
     { name: '40/41mm compact', width: 176, height: 197 },
     { name: '42mm low', width: 184, height: 205 },
@@ -42,23 +42,20 @@ test('Watch pequeno usa orçamento adaptativo sem comprimir o Series 11 42mm', (
 
   for (const sample of samples) {
     const rowGap = 2;
-    const headerHeight = 28;
-    const answerHeight = 20;
+    const headerHeight = 26;
+    const answerHeight = 19;
     const totalGaps = rowGap * 6;
-    const roomySmallWatch = sample.height >= 215;
-    const bottomExtension = roomySmallWatch ? Math.min(14, Math.max(0, sample.height - 205)) : 0;
-    const bottomSafety = !roomySmallWatch ? 4 : 0;
+    const bottomExtension = Math.min(18, Math.max(0, sample.height - 188));
+    const bottomSafety = 0;
     const availableKeys = Math.max(
       0,
       sample.height + bottomExtension - headerHeight - answerHeight - totalGaps - bottomSafety,
     );
-    const enterKeyHeight = Math.min(roomySmallWatch ? 30 : 28, Math.max(20, availableKeys * 0.17));
+    const enterKeyHeight = Math.min(30, Math.max(22, availableKeys * 0.18));
     const mainKeyHeight = Math.max(1, (availableKeys - enterKeyHeight) / 4);
 
-    assert.ok(mainKeyHeight >= 20, `${sample.name}: teclas muito baixas (${mainKeyHeight})`);
-    if (roomySmallWatch) {
-      assert.ok(mainKeyHeight >= 35, `${sample.name}: deveria aproveitar a área inferior (${mainKeyHeight})`);
-    }
+    assert.ok(mainKeyHeight >= 24, `${sample.name}: teclas muito baixas (${mainKeyHeight})`);
+    assert.ok(mainKeyHeight >= 30, `${sample.name}: deveria aproveitar melhor a área inferior (${mainKeyHeight})`);
   }
 });
 
@@ -70,12 +67,13 @@ test('Home do Watch pequeno é compacta e não empurra a engrenagem para fora', 
   assert.match(c, /Spacer\(\)\s*\.frame\(height: 2\)/);
 });
 
-test('Series 11 42mm desce e amplia o jogo sem alterar o Ultra', () => {
+test('Series 11 42mm sobe o header e desce o bloco geral sem alterar o Ultra', () => {
   const c = read('ios/App/Por Sete Watch App/ContentView.swift');
-  assert.match(c, /let roomySmallWatch = smallWatch && height >= 215/);
-  assert.match(c, /let bottomExtension: CGFloat = roomySmallWatch \? min\(14, max\(0, height - 205\)\) : 0/);
-  assert.match(c, /let headerLift: CGFloat = roomySmallWatch \? -13 : \(smallWatch \? -11 : -9\)/);
-  assert.match(c, /let stackLift: CGFloat = roomySmallWatch \? 2 : \(smallWatch \? -4 : -6\)/);
+  assert.match(c, /let headerHeight: CGFloat = smallWatch \? 26 : \(compactWatch \? 30 : 34\)/);
+  assert.match(c, /let answerHeight: CGFloat = smallWatch \? 19 : \(compactWatch \? 20 : 22\)/);
+  assert.match(c, /let bottomExtension: CGFloat = smallWatch \? min\(18, max\(0, height - 188\)\) : 0/);
+  assert.match(c, /let headerLift: CGFloat = smallWatch \? -13 : -9/);
+  assert.match(c, /let stackLift: CGFloat = smallWatch \? 6 : -6/);
 });
 
 test('Ultra preserva a geometria grande aprovada', () => {
